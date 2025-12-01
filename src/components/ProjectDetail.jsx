@@ -156,14 +156,14 @@ const ProjectDetail = ({ project, onClose }) => {
       <div className="relative z-10 min-h-screen">
         
         {/* HERO COVER PHOTO - Full screen, immediate impact */}
-        <div className="h-screen w-full relative">
+        <div className="h-screen w-full relative bg-black">
           <img 
             src={project.cover} 
             alt={project.title}
             className="w-full h-full object-cover"
           />
           {/* Gradient overlay for text readability */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40" />
           
           {/* Title overlay on the cover photo */}
           <div className="absolute bottom-0 left-0 w-full p-8 md:p-16 text-white">
