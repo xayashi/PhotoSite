@@ -15,7 +15,7 @@ html {
 /* Hide scrollbar but keep functionality */
 body {
   overflow: hidden;
-  background-color: #0a0a0a;
+  background-color: #121212;
 }
 
 /* Hide default cursor on desktop when custom cursor is active */
@@ -23,8 +23,10 @@ body {
   body {
     cursor: none;
   }
-  
-  a, button, [data-card] {
+
+  a,
+  button,
+  [data-card] {
     cursor: none;
   }
 }
@@ -41,6 +43,7 @@ body {
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -51,6 +54,7 @@ body {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -61,6 +65,7 @@ body {
     opacity: 0;
     transform: translateY(100%);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -88,7 +93,7 @@ body::before {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  opacity: 0.04;
+  opacity: 0.06;
   pointer-events: none;
   z-index: -1;
 }
@@ -99,8 +104,17 @@ body::after {
   position: fixed;
   inset: 0;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-  opacity: 0.03;
+  opacity: 0.02;
   pointer-events: none;
   z-index: 9998;
 }
 
+/* Logo hover - red color with grow */
+.logo-interactive {
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.logo-interactive:hover {
+  filter: brightness(0) saturate(100%) invert(18%) sepia(90%) saturate(2000%) hue-rotate(340deg) brightness(0.9);
+  transform: scale(1.08);
+}
