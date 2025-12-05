@@ -1,34 +1,53 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const CustomCursor = () => {
   const cursorRef = useRef(null);
-  const position = useRef({ x: 0, y: 0 });
+  const [cursorText, setCursorText] = useState('');
+  const [isHovering, setIsHovering] = useState(false);
 
   useEffect(() => {
     const cursor = cursorRef.current;
 
     const handleMouseMove = (e) => {
-      position.current = { x: e.clientX, y: e.clientY };
-
       // Update cursor position instantly
       if (cursor) {
         cursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
       }
     };
 
+    const handleMouseOver = (e) => {
+      const target = e.target.closest('[data-cursor]');
+      if (target) {
+        const text = target.getAttribute('data-cursor');
+        setCursorText(text || '');
+        setIsHovering(true);
+      } else {
+        setIsHovering(false);
+        setCursorText('');
+      }
+    };
+
     window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseover', handleMouseOver);
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseover', handleMouseOver);
     };
   }, []);
 
   return (
     <div
       ref={cursorRef}
-      className="fixed top-0 left-0 pointer-events-none z-[9999] mix-blend-difference hidden md:flex items-center justify-center w-5 h-5 -ml-2.5 -mt-2.5"
+      className={`fixed top-0 left-0 pointer-events-none z-[9999] mix-blend-difference hidden md:flex items-center justify-center transition-[width,height,margin,background-color,border-color] duration-300 ease-out
+        ${isHovering ? 'w-20 h-20 -ml-10 -mt-10 bg-white text-black' : 'w-5 h-5 -ml-2.5 -mt-2.5 border border-white'}
+        rounded-full`}
     >
-      <div className="w-full h-full rounded-full border border-white" />
+      {isHovering && (
+        <span className="text-[10px] font-bold uppercase tracking-widest text-center leading-none">
+          {cursorText}
+        </span>
+      )}
     </div>
   );
 };

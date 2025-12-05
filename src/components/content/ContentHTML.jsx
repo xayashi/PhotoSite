@@ -15,6 +15,7 @@ const ContentHTML = ({ content, onImageClick }) => {
         const images = containerRef.current.querySelectorAll('img');
         images.forEach((img, index) => {
             img.style.cursor = 'pointer';
+            img.setAttribute('data-cursor', 'click');
             img.onclick = () => onImageClick?.(img.src, index);
         });
     }, [content, onImageClick]);

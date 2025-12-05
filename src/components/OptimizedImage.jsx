@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Maximize2 } from 'lucide-react';
 
 /**
  * OptimizedImage component that uses Vercel's Image Optimization API
@@ -44,7 +45,12 @@ const OptimizedImage = ({
     const optimizedSrc = getOptimizedSrc();
 
     return (
-        <div className={`relative overflow-hidden ${className}`} style={style}>
+        <div
+            className={`relative overflow-hidden group/image ${className} ${onClick ? 'cursor-pointer' : ''}`}
+            style={style}
+            onClick={onClick}
+            data-cursor={onClick ? "click" : undefined}
+        >
             {/* Skeleton loader */}
             {!isLoaded && (
                 <div className="absolute inset-0 bg-stone-200 animate-pulse" />
@@ -59,11 +65,17 @@ const OptimizedImage = ({
                     setHasError(true);
                     setIsLoaded(true);
                 }}
-                onClick={onClick}
                 className={`w-full h-full object-cover transition-all duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'
-                    } ${onClick ? 'cursor-pointer' : ''} ${imgClassName}`}
+                    } ${imgClassName}`}
                 data-full-src={fullSrc || src}
             />
+
+            {/* Mobile/Touch Hint Icon */}
+            {onClick && isLoaded && (
+                <div className="absolute bottom-3 right-3 bg-black/50 backdrop-blur-sm p-1.5 rounded-full text-white opacity-0 md:group-hover/image:opacity-100 md:opacity-0 opacity-100 transition-opacity duration-300 pointer-events-none">
+                    <Maximize2 size={14} />
+                </div>
+            )}
         </div>
     );
 };

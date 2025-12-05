@@ -599,6 +599,8 @@ export default function App() {
           }}
         />
       )}
+      {/* Custom Cursor */}
+      <CustomCursor />
     </div>
   );
 }
