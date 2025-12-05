@@ -437,7 +437,8 @@ export default function App() {
     const isMobile = window.innerWidth < 768;
     return {
       width: isMobile ? 'clamp(260px, 80vw, 340px)' : 'clamp(280px, 40vh, 400px)',
-      height: isMobile ? 'clamp(380px, 65vh, 500px)' : 'clamp(400px, 60vh, 600px)',
+      height: isMobile ? 'auto' : 'clamp(400px, 60vh, 600px)',
+      aspectRatio: isMobile ? '3/4' : 'unset',
     };
   };
 
