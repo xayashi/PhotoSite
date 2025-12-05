@@ -9,12 +9,15 @@ import CustomCursor from './components/CustomCursor';
 export default function App() {
   const scrollContainerRef = useRef(null);
   // Calculate initial scroll position to center slide 1
+  // The container has pl-[50vw] which puts content starting at viewport center
+  // Cards have dimensions and margins that we need to account for to center the first card
   const getInitialScroll = () => {
-    const cardWidth = Math.min(window.innerHeight * 0.4, window.innerWidth * 0.35);
-    const startPadding = window.innerWidth * 0.5;
-    const viewportCenter = window.innerWidth / 2;
-    const cardCenter = startPadding + (cardWidth / 2);
-    return Math.max(0, cardCenter - viewportCenter);
+    // Card width uses: clamp(280px, 40vh, 400px)
+    const cardWidth = Math.max(280, Math.min(window.innerHeight * 0.4, 400));
+    // Card margin uses: clamp(16px, 5vw, 48px) on each side
+    const cardMargin = Math.max(16, Math.min(window.innerWidth * 0.05, 48));
+    // To center the first card: scroll by (cardWidth / 2) + left margin
+    return (cardWidth / 2) + cardMargin;
   };
   const scrollRef = useRef({ current: getInitialScroll(), target: getInitialScroll(), skew: 0 });
   const touchRef = useRef({ startX: 0, startY: 0 });
@@ -51,15 +54,25 @@ export default function App() {
     const scroll = scrollRef.current;
     const touch = touchRef.current;
 
-    const getCardWidth = () => Math.min(window.innerHeight * 0.4, window.innerWidth * 0.35);
+    // Card width uses: clamp(280px, 40vh, 400px)
+    const getCardWidth = () => Math.max(280, Math.min(window.innerHeight * 0.4, 400));
+    // Card margin uses: clamp(16px, 5vw, 48px) on each side
+    const getCardMargin = () => Math.max(16, Math.min(window.innerWidth * 0.05, 48));
+
+    // Minimum scroll keeps the first card centered
+    const getMinScroll = () => {
+      const cardWidth = getCardWidth();
+      const cardMargin = getCardMargin();
+      return (cardWidth / 2) + cardMargin;
+    };
 
     const getMaxScroll = () => {
       const cardWidth = getCardWidth();
-      const cardMargin = Math.min(96, window.innerWidth * 0.05);
+      const cardMargin = getCardMargin();
       const startPadding = window.innerWidth * 0.5;
       const endSectionWidth = window.innerWidth * 0.5;
-      const totalContentWidth = startPadding + (projects.length * (cardWidth + cardMargin)) + endSectionWidth;
-      return Math.max(0, totalContentWidth - window.innerWidth + 100);
+      const totalContentWidth = startPadding + (projects.length * (cardWidth + (cardMargin * 2))) + endSectionWidth;
+      return Math.max(getMinScroll(), totalContentWidth - window.innerWidth + 100);
     };
 
     const handleWheel = (e) => {
@@ -76,7 +89,7 @@ export default function App() {
       if (Math.abs(delta) > 5) setFocusedId(null);
 
       scroll.target += delta * 2;
-      scroll.target = Math.max(0, Math.min(scroll.target, getMaxScroll()));
+      scroll.target = Math.max(getMinScroll(), Math.min(scroll.target, getMaxScroll()));
     };
 
     // Keyboard navigation
@@ -84,8 +97,8 @@ export default function App() {
       if (isOverlayOpen) return;
 
       const cardWidth = getCardWidth();
-      const cardMargin = Math.min(96, window.innerWidth * 0.05);
-      const jumpDistance = cardWidth + cardMargin;
+      const cardMargin = getCardMargin();
+      const jumpDistance = cardWidth + (cardMargin * 2);
 
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
         e.preventDefault();
@@ -93,7 +106,7 @@ export default function App() {
         setFocusedId(null);
       } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
         e.preventDefault();
-        scroll.target = Math.max(scroll.target - jumpDistance, 0);
+        scroll.target = Math.max(scroll.target - jumpDistance, getMinScroll());
         setFocusedId(null);
       } else if (e.key === 'Escape') {
         setFocusedId(null);
@@ -117,7 +130,7 @@ export default function App() {
       if (Math.abs(deltaX) > Math.abs(deltaY)) {
         e.preventDefault();
         scroll.target += deltaX * 1.5;
-        scroll.target = Math.max(0, Math.min(scroll.target, getMaxScroll()));
+        scroll.target = Math.max(getMinScroll(), Math.min(scroll.target, getMaxScroll()));
         touch.startX = e.touches[0].clientX;
       }
     };
