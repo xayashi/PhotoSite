@@ -77,13 +77,19 @@ const LazyImage = ({ src, alt, className, onLoad }) => {
 };
 
 // Progress Indicator Component
-const ProgressIndicator = ({ current, total, scrollProgress }) => {
+const ProgressIndicator = ({ current, total, progressBarRef }) => {
   return (
     <>
       {/* Progress bar at bottom */}
       <div
+        ref={progressBarRef}
         className="progress-bar"
-        style={{ width: `${scrollProgress * 100}%` }}
+        style={{
+          width: '100%',
+          transform: 'scaleX(0)',
+          transformOrigin: 'left',
+          willChange: 'transform'
+        }}
       />
 
       {/* Dot indicators */}
@@ -165,7 +171,8 @@ export default function App() {
   };
   const scrollRef = useRef({ current: getInitialScroll(), target: getInitialScroll(), skew: 0 });
   const touchRef = useRef({ startX: 0, startY: 0 });
-  const cardRefs = useRef([]);
+  const cardRefs = useRef({});
+  const progressBarRef = useRef(null);
 
   // Interaction States
   const [focusedId, setFocusedId] = useState(null);
@@ -176,7 +183,6 @@ export default function App() {
   const [showArchive, setShowArchive] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
-  const [scrollProgress, setScrollProgress] = useState(0);
   const [cardTilt, setCardTilt] = useState({});
 
   // Markdown posts state
@@ -292,14 +298,22 @@ export default function App() {
       const minScroll = getMinScroll();
       const maxScroll = getMaxScroll();
       const progress = (scroll.current - minScroll) / (maxScroll - minScroll);
-      setScrollProgress(Math.max(0, Math.min(1, progress)));
+      const clampedProgress = Math.max(0, Math.min(1, progress));
+
+      // Direct DOM manipulation for performance
+      if (progressBarRef.current) {
+        progressBarRef.current.style.transform = `scaleX(${clampedProgress})`;
+      }
 
       // Calculate current card index
       const cardWidth = getCardWidth();
       const cardMargin = getCardMargin();
       const cardStep = cardWidth + (cardMargin * 2);
       const index = Math.round((scroll.current - minScroll) / cardStep);
-      setCurrentCardIndex(Math.max(0, Math.min(allProjects.length - 1, index)));
+      const newIndex = Math.max(0, Math.min(allProjects.length - 1, index));
+
+      // Only update state if index changed
+      setCurrentCardIndex(prev => prev !== newIndex ? newIndex : prev);
     };
 
     const handleWheel = (e) => {
@@ -375,12 +389,14 @@ export default function App() {
       if (scrollContainerRef.current) {
         scrollContainerRef.current.style.transform = `translate3d(-${scroll.current}px, 0, 0)`;
 
-        const cards = scrollContainerRef.current.querySelectorAll('[data-card]');
-        cards.forEach(card => {
-          if (!card.dataset.focused) {
-            card.style.transform = `skewX(${-scroll.skew}deg)`;
-          }
-        });
+        // Optimization: Skip skew effect on mobile
+        if (window.innerWidth >= 768) {
+          Object.values(cardRefs.current).forEach(card => {
+            if (card && !card.dataset.focused) {
+              card.style.transform = `skewX(${-scroll.skew}deg)`;
+            }
+          });
+        }
       }
 
       updateProgress();
@@ -439,7 +455,7 @@ export default function App() {
         <ProgressIndicator
           current={currentCardIndex}
           total={allProjects.length}
-          scrollProgress={scrollProgress}
+          progressBarRef={progressBarRef}
         />
       )}
 
