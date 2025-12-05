@@ -134,8 +134,11 @@ export default function App() {
   // The container has pl-[50vw] which puts content starting at viewport center
   // Cards have dimensions and margins that we need to account for to center the first card
   const getInitialScroll = () => {
-    // Card width uses: clamp(280px, 40vh, 400px)
-    const cardWidth = Math.max(280, Math.min(window.innerHeight * 0.4, 400));
+    // Card width uses: clamp(280px, 40vh, 400px) on desktop, clamp(280px, 85vw, 360px) on mobile
+    const isMobile = window.innerWidth < 768;
+    const cardWidth = isMobile
+      ? Math.max(280, Math.min(window.innerWidth * 0.85, 360))
+      : Math.max(280, Math.min(window.innerHeight * 0.4, 400));
     // Card margin uses: clamp(16px, 5vw, 48px) on each side
     const cardMargin = Math.max(16, Math.min(window.innerWidth * 0.05, 48));
     // To center the first card: scroll by (cardWidth / 2) + left margin
@@ -234,11 +237,11 @@ export default function App() {
     const scroll = scrollRef.current;
     const touch = touchRef.current;
 
-    // Card width uses: clamp(280px, 40vh, 400px) on desktop, clamp(260px, 80vw, 340px) on mobile
+    // Card width uses: clamp(280px, 40vh, 400px) on desktop, clamp(280px, 85vw, 360px) on mobile
     const getCardWidth = () => {
       const isMobile = window.innerWidth < 768;
       if (isMobile) {
-        return Math.max(260, Math.min(window.innerWidth * 0.8, 340));
+        return Math.max(280, Math.min(window.innerWidth * 0.85, 360));
       }
       return Math.max(280, Math.min(window.innerHeight * 0.4, 400));
     };
@@ -408,9 +411,9 @@ export default function App() {
   const getCardStyle = () => {
     const isMobile = window.innerWidth < 768;
     return {
-      width: isMobile ? 'clamp(260px, 80vw, 340px)' : 'clamp(280px, 40vh, 400px)',
-      height: isMobile ? 'auto' : 'clamp(400px, 60vh, 600px)',
-      aspectRatio: isMobile ? '3/4' : 'unset',
+      width: isMobile ? 'clamp(280px, 85vw, 360px)' : 'clamp(280px, 40vh, 400px)',
+      height: isMobile ? 'clamp(350px, 50vh, 480px)' : 'clamp(400px, 60vh, 600px)',
+      aspectRatio: 'unset',
     };
   };
 
@@ -500,11 +503,11 @@ export default function App() {
                 <LazyImage
                   src={item.cover}
                   alt={item.title}
-                  className={`w-full h-full object-cover color-reveal
+                  className={`w-full h-full object-contain color-reveal
                       ${isFocused ? 'scale-100 revealed' : 'scale-110'}
                       ${isHovered ? 'revealed' : ''}
                     `}
-                  style={{ objectFit: 'cover', objectPosition: 'center' }}
+                  style={{ objectFit: 'contain', objectPosition: 'center' }}
                 />
 
                 {/* The "View" Prompt - Only visible when focused */}
