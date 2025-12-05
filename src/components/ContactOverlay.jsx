@@ -27,13 +27,13 @@ const ContactOverlay = ({ onClose }) => {
   };
 
   return (
-    <div 
-      className={`fixed inset-0 z-[100] bg-[#0a0a0a] text-white overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.76,0,0.24,1)]
+    <div
+      className={`fixed inset-0 z-[100] bg-[#121212] text-white overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.76,0,0.24,1)]
       ${visible ? 'opacity-100' : 'opacity-0'}`}
     >
       {/* Close Button */}
-      <button 
-        onClick={handleClose} 
+      <button
+        onClick={handleClose}
         className="fixed top-6 right-6 md:top-8 md:right-8 z-50 p-2 hover:text-crimson transition-colors"
       >
         <X size={24} />
@@ -45,17 +45,17 @@ const ContactOverlay = ({ onClose }) => {
           <span className="text-xs font-mono tracking-[0.3em] text-crimson uppercase mb-8 block">
             Get in Touch
           </span>
-          
+
           <h2 className="text-5xl md:text-8xl font-serif mb-6">
             Let's work together
           </h2>
-          
+
           <p className="text-stone-500 max-w-md mx-auto mb-12">
             Available for commercial projects, collaborations, and creative partnerships.
           </p>
 
           {/* Email Link */}
-          <a 
+          <a
             href={`mailto:${email}`}
             className="group inline-flex items-center gap-3 text-2xl md:text-4xl font-mono hover:text-crimson transition-colors mb-16"
           >
@@ -92,8 +92,8 @@ const ContactOverlay = ({ onClose }) => {
 
       {/* Footer Text */}
       <div className="absolute bottom-8 left-0 right-0 flex flex-col items-center gap-2">
-        <img 
-          src="/logo.png" 
+        <img
+          src="/logo.png"
           alt="Logo"
           className="h-8 w-auto invert opacity-30"
         />

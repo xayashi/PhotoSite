@@ -16,13 +16,13 @@ const AboutOverlay = ({ onClose }) => {
   };
 
   return (
-    <div 
-      className={`fixed inset-0 z-[100] bg-[#0a0a0a] text-white overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.76,0,0.24,1)]
+    <div
+      className={`fixed inset-0 z-[100] bg-[#121212] text-white overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.76,0,0.24,1)]
       ${visible ? 'opacity-100' : 'opacity-0'}`}
     >
       {/* Close Button */}
-      <button 
-        onClick={handleClose} 
+      <button
+        onClick={handleClose}
         className="fixed top-6 right-6 md:top-8 md:right-8 z-50 p-2 hover:text-crimson transition-colors"
       >
         <X size={24} />
@@ -32,8 +32,8 @@ const AboutOverlay = ({ onClose }) => {
       <div className="min-h-screen flex flex-col md:flex-row">
         {/* Portrait Side */}
         <div className={`w-full md:w-1/2 h-[50vh] md:h-screen relative overflow-hidden transition-all duration-1000 delay-100 ${visible ? 'opacity-100' : 'opacity-0'}`}>
-          <img 
-            src={about.portrait} 
+          <img
+            src={about.portrait}
             alt="Photographer portrait"
             className={`w-full h-full object-cover transition-transform duration-[2000ms] ${visible ? 'scale-100' : 'scale-110'}`}
           />
@@ -46,11 +46,11 @@ const AboutOverlay = ({ onClose }) => {
             <span className="text-xs font-mono tracking-[0.3em] text-crimson uppercase mb-6 block">
               About
             </span>
-            
+
             <h2 className="text-4xl md:text-6xl font-serif mb-8 leading-tight">
               {about.headline}
             </h2>
-            
+
             <div className="space-y-6 text-stone-400 leading-relaxed">
               {about.bio.split('\n\n').map((paragraph, index) => (
                 <p key={index}>{paragraph}</p>
