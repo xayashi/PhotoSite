@@ -6,10 +6,10 @@ const CustomCursor = () => {
 
   useEffect(() => {
     const cursor = cursorRef.current;
-    
+
     const handleMouseMove = (e) => {
       position.current = { x: e.clientX, y: e.clientY };
-      
+
       // Update cursor position instantly
       if (cursor) {
         cursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
@@ -34,4 +34,3 @@ const CustomCursor = () => {
 };
 
 export default CustomCursor;
-

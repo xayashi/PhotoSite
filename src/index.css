@@ -118,3 +118,222 @@ body::after {
   filter: brightness(0) saturate(100%) invert(18%) sepia(90%) saturate(2000%) hue-rotate(340deg) brightness(0.9);
   transform: scale(1.08);
 }
+
+/* ============================================
+   UX IMPROVEMENTS - Progress Indicator
+   ============================================ */
+.progress-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(196, 30, 58, 0.8), transparent);
+  transition: width 0.3s ease-out;
+  z-index: 50;
+}
+
+.progress-dots {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.progress-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.progress-dot.active {
+  background: rgba(196, 30, 58, 0.8);
+  transform: scale(1.3);
+}
+
+.progress-dot.passed {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* ============================================
+   UX IMPROVEMENTS - Card 3D Tilt Effect
+   ============================================ */
+.card-3d-container {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+.card-3d {
+  transition: transform 0.15s ease-out, box-shadow 0.3s ease;
+  transform-style: preserve-3d;
+}
+
+.card-3d:hover {
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+/* Card lift effect on hover */
+.card-lift {
+  transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.card-lift:hover {
+  transform: translateY(-8px) translateZ(20px);
+}
+
+/* ============================================
+   UX IMPROVEMENTS - Image Loading Effects
+   ============================================ */
+.image-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.image-blur-placeholder {
+  position: absolute;
+  inset: 0;
+  filter: blur(20px);
+  transform: scale(1.1);
+  transition: opacity 0.5s ease-out;
+}
+
+.image-blur-placeholder.loaded {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.image-main {
+  opacity: 0;
+  transition: opacity 0.5s ease-out, filter 0.7s ease, transform 0.7s ease;
+}
+
+.image-main.loaded {
+  opacity: 1;
+}
+
+/* Skeleton loading animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0.03) 25%,
+      rgba(255, 255, 255, 0.08) 50%,
+      rgba(255, 255, 255, 0.03) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* ============================================
+   UX IMPROVEMENTS - Color Reveal on Hover
+   ============================================ */
+.color-reveal {
+  filter: grayscale(100%);
+  transition: filter 0.6s cubic-bezier(0.23, 1, 0.32, 1),
+    transform 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.color-reveal:hover,
+.color-reveal.revealed {
+  filter: grayscale(0%);
+}
+
+/* ============================================
+   UX IMPROVEMENTS - Swipe Hint Animation
+   ============================================ */
+@keyframes swipeHint {
+
+  0%,
+  100% {
+    transform: translateX(0);
+    opacity: 0.6;
+  }
+
+  50% {
+    transform: translateX(-20px);
+    opacity: 1;
+  }
+}
+
+@keyframes swipeHintFade {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+.swipe-hint {
+  animation: swipeHint 1.5s ease-in-out infinite;
+}
+
+.swipe-hint.dismissed {
+  animation: swipeHintFade 0.5s ease-out forwards;
+}
+
+/* ============================================
+   UX IMPROVEMENTS - Staggered Letter Animation
+   ============================================ */
+@keyframes letterReveal {
+  from {
+    opacity: 0;
+    transform: translateY(20px) rotateX(-20deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) rotateX(0);
+  }
+}
+
+.letter-animate {
+  display: inline-block;
+  opacity: 0;
+  animation: letterReveal 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.title-reveal {
+  perspective: 500px;
+}
+
+/* ============================================
+   Reduced Motion Preferences
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .swipe-hint {
+    animation: none;
+  }
+
+  .letter-animate {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .card-3d,
+  .card-lift {
+    transition: none;
+  }
+}
