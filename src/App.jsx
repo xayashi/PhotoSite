@@ -28,7 +28,7 @@ const AnimatedTitle = ({ text, isVisible, delay = 0 }) => {
 };
 
 // Image with blur-up loading effect
-const LazyImage = ({ src, alt, className, onLoad }) => {
+const LazyImage = ({ src, alt, className, style, onLoad }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(false);
   const imgRef = useRef(null);
@@ -70,42 +70,14 @@ const LazyImage = ({ src, alt, className, onLoad }) => {
           alt={alt}
           onLoad={handleLoad}
           className={`${className} image-main ${isLoaded ? 'loaded' : ''}`}
+          style={style}
         />
       )}
     </div>
   );
 };
 
-// Progress Indicator Component
-const ProgressIndicator = ({ current, total, progressBarRef }) => {
-  return (
-    <>
-      {/* Progress bar at bottom */}
-      <div
-        ref={progressBarRef}
-        className="progress-bar"
-        style={{
-          width: '100%',
-          transform: 'scaleX(0)',
-          transformOrigin: 'left',
-          willChange: 'transform'
-        }}
-      />
 
-      {/* Dot indicators */}
-      <div className="fixed bottom-8 right-8 z-50 hidden md:flex progress-dots">
-        {Array.from({ length: total }).map((_, index) => (
-          <button
-            key={index}
-            className={`progress-dot ${index === current ? 'active' : index < current ? 'passed' : ''
-              }`}
-            aria-label={`Go to project ${index + 1}`}
-          />
-        ))}
-      </div>
-    </>
-  );
-};
 
 // Swipe Hint for mobile
 const SwipeHint = ({ onDismiss }) => {
@@ -451,14 +423,7 @@ export default function App() {
       {/* Custom Cursor */}
       <CustomCursor />
 
-      {/* Progress Indicator */}
-      {!isOverlayOpen && (
-        <ProgressIndicator
-          current={currentCardIndex}
-          total={allProjects.length}
-          progressBarRef={progressBarRef}
-        />
-      )}
+
 
       {/* Swipe Hint for Mobile */}
       {!isOverlayOpen && <SwipeHint />}
@@ -536,9 +501,10 @@ export default function App() {
                   src={item.cover}
                   alt={item.title}
                   className={`w-full h-full object-cover color-reveal
-                    ${isFocused ? 'scale-100 revealed' : 'scale-110'}
-                    ${isHovered ? 'revealed' : ''}
-                  `}
+                      ${isFocused ? 'scale-100 revealed' : 'scale-110'}
+                      ${isHovered ? 'revealed' : ''}
+                    `}
+                  style={{ objectFit: 'cover', objectPosition: 'center' }}
                 />
 
                 {/* The "View" Prompt - Only visible when focused */}
