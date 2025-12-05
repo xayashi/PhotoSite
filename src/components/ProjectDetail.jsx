@@ -96,7 +96,6 @@ const ProjectDetail = ({ project, onClose }) => {
         tabIndex={-1}
         className="w-full h-full overflow-y-auto scrollbar-hidden"
       >
-
         {/* SCROLLABLE CONTENT LAYER */}
         <div className="relative z-10">
 
@@ -178,39 +177,36 @@ const ProjectDetail = ({ project, onClose }) => {
             )}
           </div>
 
-          {/* FINAL SECTION: Quote + Footer combined for better centering */}
-          <div className="min-h-screen flex flex-col">
-            {/* Quote - centered in available space */}
-            <div className="flex-grow flex items-center justify-center px-8 py-24">
-              <p className="font-serif italic text-xl md:text-2xl text-stone-500 text-center max-w-lg">
-                "The camera is an instrument that teaches people how to see without a camera."
-              </p>
-            </div>
-
-            {/* Footer - at bottom */}
-            <footer className="py-16 md:py-24 border-t border-stone-200">
-              <div className="max-w-md mx-auto text-center px-8">
-                {/* Project info */}
-                <p className="text-xs font-mono tracking-[0.3em] text-crimson uppercase mb-2">
-                  {project.chapter || 'Featured'}
-                </p>
-                <h3 className="text-2xl md:text-3xl font-serif text-stone-700 mb-2">
-                  {project.title}
-                </h3>
-                <p className="text-sm text-stone-500 mb-8">
-                  {project.subtitle}
-                </p>
-
-                {/* Back to top */}
-                <button
-                  onClick={scrollToTop}
-                  className="text-xs uppercase tracking-[0.2em] text-stone-400 hover:text-crimson transition-colors"
-                >
-                  ↑ Back to Top
-                </button>
-              </div>
-            </footer>
+          {/* FINAL SECTION: Quote */}
+          <div className="min-h-screen flex items-center justify-center px-8 py-24">
+            <p className="font-serif italic text-xl md:text-2xl text-stone-500 text-center max-w-lg">
+              "The camera is an instrument that teaches people how to see without a camera."
+            </p>
           </div>
+
+          {/* Footer */}
+          <footer className="py-16 md:py-24 border-t border-stone-200">
+            <div className="max-w-md mx-auto text-center px-8">
+              {/* Project info */}
+              <p className="text-xs font-mono tracking-[0.3em] text-crimson uppercase mb-2">
+                {project.chapter || 'Featured'}
+              </p>
+              <h3 className="text-2xl md:text-3xl font-serif text-stone-700 mb-2">
+                {project.title}
+              </h3>
+              <p className="text-sm text-stone-500 mb-8">
+                {project.subtitle}
+              </p>
+
+              {/* Back to top */}
+              <button
+                onClick={scrollToTop}
+                className="text-xs uppercase tracking-[0.2em] text-stone-400 hover:text-crimson transition-colors"
+              >
+                ↑ Back to Top
+              </button>
+            </div>
+          </footer>
         </div>
 
       </div>

@@ -28,7 +28,7 @@ export const siteConfig = {
     bio: `I'm a photographer based in the Midwest, specializing in landscape, urban, and documentary photography. My work explores the intersection of light, space, and human experience.
 
 With over a decade behind the lens, I've developed a distinctive style that emphasizes mood and atmosphere. Each project is an opportunity to tell a story through careful composition and authentic moments.`,
-    portrait: "/images/about.png",
+    portrait: "/images/about.jpg",
     location: "Minneapolis, MN",
     availability: "Available for projects worldwide",
   },
