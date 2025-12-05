@@ -412,8 +412,8 @@ export default function App() {
     const isMobile = window.innerWidth < 768;
     return {
       width: isMobile ? 'clamp(280px, 85vw, 360px)' : 'clamp(280px, 40vh, 400px)',
-      height: isMobile ? 'clamp(350px, 50vh, 480px)' : 'clamp(400px, 60vh, 600px)',
-      aspectRatio: 'unset',
+      height: isMobile ? 'auto' : 'clamp(400px, 60vh, 600px)',
+      aspectRatio: isMobile ? '3/4' : 'unset',
     };
   };
 
@@ -503,11 +503,11 @@ export default function App() {
                 <LazyImage
                   src={item.cover}
                   alt={item.title}
-                  className={`w-full h-full object-contain color-reveal
+                  className={`w-full h-full object-cover color-reveal
                       ${isFocused ? 'scale-100 revealed' : 'scale-110'}
                       ${isHovered ? 'revealed' : ''}
                     `}
-                  style={{ objectFit: 'contain', objectPosition: 'center' }}
+                  style={{ objectFit: 'cover', objectPosition: 'center' }}
                 />
 
                 {/* The "View" Prompt - Only visible when focused */}
