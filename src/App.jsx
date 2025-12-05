@@ -256,10 +256,21 @@ export default function App() {
     const scroll = scrollRef.current;
     const touch = touchRef.current;
 
-    // Card width uses: clamp(280px, 40vh, 400px)
-    const getCardWidth = () => Math.max(280, Math.min(window.innerHeight * 0.4, 400));
-    // Card margin uses: clamp(16px, 5vw, 48px) on each side
-    const getCardMargin = () => Math.max(16, Math.min(window.innerWidth * 0.05, 48));
+    // Card width uses: clamp(280px, 40vh, 400px) on desktop, clamp(260px, 80vw, 340px) on mobile
+    const getCardWidth = () => {
+      const isMobile = window.innerWidth < 768;
+      if (isMobile) {
+        return Math.max(260, Math.min(window.innerWidth * 0.8, 340));
+      }
+      return Math.max(280, Math.min(window.innerHeight * 0.4, 400));
+    };
+
+    // Card margin uses: clamp(16px, 5vw, 48px) on desktop, 12px on mobile
+    const getCardMargin = () => {
+      const isMobile = window.innerWidth < 768;
+      if (isMobile) return 12;
+      return Math.max(16, Math.min(window.innerWidth * 0.05, 48));
+    };
 
     // Minimum scroll keeps the first card centered
     const getMinScroll = () => {
@@ -345,7 +356,8 @@ export default function App() {
       // Only handle horizontal swipes
       if (Math.abs(deltaX) > Math.abs(deltaY)) {
         e.preventDefault();
-        scroll.target += deltaX * 1.5;
+        // Increased sensitivity for mobile (2.0 instead of 1.5)
+        scroll.target += deltaX * 2.0;
         scroll.target = Math.max(getMinScroll(), Math.min(scroll.target, getMaxScroll()));
         touch.startX = e.touches[0].clientX;
       }
@@ -406,9 +418,10 @@ export default function App() {
 
   // Responsive card sizing
   const getCardStyle = () => {
+    const isMobile = window.innerWidth < 768;
     return {
-      width: 'clamp(280px, 40vh, 400px)',
-      height: 'clamp(400px, 60vh, 600px)',
+      width: isMobile ? 'clamp(260px, 80vw, 340px)' : 'clamp(280px, 40vh, 400px)',
+      height: isMobile ? 'clamp(380px, 65vh, 500px)' : 'clamp(400px, 60vh, 600px)',
     };
   };
 
@@ -486,7 +499,7 @@ export default function App() {
               `}
               style={{
                 ...getCardStyle(),
-                margin: '0 clamp(16px, 5vw, 48px)',
+                margin: window.innerWidth < 768 ? '0 12px' : '0 clamp(16px, 5vw, 48px)',
                 transitionDelay: isLoaded ? '0ms' : `${300 + index * 100}ms`,
                 transitionProperty: 'opacity, transform',
                 transitionDuration: '800ms',
@@ -530,7 +543,7 @@ export default function App() {
               {/* Typography with animated title */}
               <div className={`absolute -bottom-16 left-0 transition-all duration-500 ${isFocused ? 'translate-y-4 opacity-100' : 'opacity-60'}`}>
                 <p className="text-xs text-white/60 mb-1 font-mono">{item.subtitle}</p>
-                <h2 className="text-5xl md:text-7xl font-serif text-transparent stroke-text">
+                <h2 className="text-3xl sm:text-4xl md:text-7xl font-serif text-transparent stroke-text">
                   <AnimatedTitle
                     text={item.title}
                     isVisible={isLoaded}

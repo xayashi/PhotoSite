@@ -4,7 +4,13 @@
 
 /* Custom stroke text effect for titles */
 .stroke-text {
-  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.8);
+  -webkit-text-stroke: 0.5px rgba(255, 255, 255, 0.8);
+}
+
+@media (min-width: 768px) {
+  .stroke-text {
+    -webkit-text-stroke: 1px rgba(255, 255, 255, 0.8);
+  }
 }
 
 /* Smooth scrolling for the whole document */
@@ -337,6 +343,7 @@ body::after {
     transition: none;
   }
 }
+
 /* ============================================
    Custom Scrollbar - Minimal & Elegant
    ============================================ */
@@ -378,7 +385,8 @@ body::after {
    Markdown Content Styling
    ============================================ */
 .content-html {
-  color: #44403c; /* stone-700 */
+  color: #44403c;
+  /* stone-700 */
 }
 
 .content-html p {
@@ -399,7 +407,8 @@ body::after {
   font-weight: 500;
   text-align: center;
   margin: 3rem 0 1.5rem;
-  color: #1c1917; /* stone-900 */
+  color: #1c1917;
+  /* stone-900 */
 }
 
 .content-html h3 {
@@ -408,7 +417,8 @@ body::after {
   font-weight: 500;
   text-align: center;
   margin: 2rem 0 1rem;
-  color: #292524; /* stone-800 */
+  color: #292524;
+  /* stone-800 */
 }
 
 .content-html blockquote {
@@ -416,7 +426,8 @@ body::after {
   font-style: italic;
   font-size: 1.25rem;
   text-align: center;
-  color: #78716c; /* stone-500 */
+  color: #78716c;
+  /* stone-500 */
   border-left: none;
   padding: 2rem;
   margin: 2rem auto;
@@ -447,7 +458,8 @@ body::after {
 }
 
 .content-html a {
-  color: #c41e3a; /* crimson */
+  color: #c41e3a;
+  /* crimson */
   text-decoration: underline;
   text-underline-offset: 2px;
 }

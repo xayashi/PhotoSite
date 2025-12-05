@@ -39,8 +39,8 @@ const CustomCursor = () => {
   return (
     <div
       ref={cursorRef}
-      className={`fixed top-0 left-0 pointer-events-none z-[9999] mix-blend-difference hidden md:flex items-center justify-center transition-[width,height,margin,background-color,border-color] duration-300 ease-out
-        ${isHovering ? 'w-20 h-20 -ml-10 -mt-10 bg-white text-black' : 'w-5 h-5 -ml-2.5 -mt-2.5 border border-white'}
+      className={`fixed top-0 left-0 pointer-events-none z-[9999] hidden md:flex items-center justify-center transition-[width,height,margin,background-color,border-color] duration-300 ease-out
+        ${isHovering ? 'w-20 h-20 -ml-10 -mt-10 bg-white/10 backdrop-blur-sm border border-white/20 text-white' : 'w-6 h-6 -ml-3 -mt-3 border border-white rounded-full'}
         rounded-full`}
     >
       {isHovering && (
