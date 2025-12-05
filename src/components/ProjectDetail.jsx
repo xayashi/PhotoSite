@@ -1,61 +1,37 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { ArrowLeft, Share2 } from 'lucide-react';
 import Lightbox from './Lightbox';
-
-// Hook to track element visibility for scroll-triggered animations
-const useScrollFade = (threshold = 0.3) => {
-  const ref = useRef(null);
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsVisible(entry.isIntersecting);
-      },
-      { threshold, rootMargin: '-10% 0px -10% 0px' }
-    );
-
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [threshold]);
-
-  return [ref, isVisible];
-};
-
-// Reusable fade-in section component
-const FadeSection = ({ children, className = '' }) => {
-  const [ref, isVisible] = useScrollFade(0.2);
-
-  return (
-    <div
-      ref={ref}
-      className={`transition-all duration-1000 ease-out ${isVisible
-        ? 'opacity-100 translate-y-0'
-        : 'opacity-0 translate-y-16'
-        } ${className}`}
-    >
-      {children}
-    </div>
-  );
-};
+import ContentRenderer from './content/ContentRenderer';
 
 const ProjectDetail = ({ project, onClose }) => {
   const [visible, setVisible] = useState(false);
-  const [lightboxIndex, setLightboxIndex] = useState(null);
+  const [lightboxImage, setLightboxImage] = useState(null);
   const containerRef = useRef(null);
+
+  // Check if this is a markdown-based post (has content array)
+  const isMarkdownPost = Array.isArray(project.content);
+
+  // For legacy posts, get all images for lightbox
+  const legacyImages = !isMarkdownPost && project.images ? project.images : [];
+  const [lightboxIndex, setLightboxIndex] = useState(null);
 
   // Helper to get image src (supports both string URLs and objects with metadata)
   const getImageSrc = (image) => typeof image === 'string' ? image : image.src;
 
-  // Lightbox navigation
-  const openLightbox = (index) => setLightboxIndex(index);
-  const closeLightbox = () => setLightboxIndex(null);
+  // Lightbox handlers
+  const openLightbox = (src) => setLightboxImage(src);
+  const closeLightbox = () => {
+    setLightboxImage(null);
+    setLightboxIndex(null);
+  };
+
+  // Legacy lightbox navigation
+  const openLegacyLightbox = (index) => setLightboxIndex(index);
   const prevImage = () => setLightboxIndex((i) => Math.max(0, i - 1));
-  const nextImage = () => setLightboxIndex((i) => Math.min(project.images.length - 1, i + 1));
+  const nextImage = () => setLightboxIndex((i) => Math.min(legacyImages.length - 1, i + 1));
 
   useEffect(() => {
     setTimeout(() => setVisible(true), 50);
-    // Focus the container for keyboard events
     if (containerRef.current) {
       containerRef.current.focus();
     }
@@ -66,60 +42,24 @@ const ProjectDetail = ({ project, onClose }) => {
     setTimeout(onClose, 600);
   };
 
-  // Keyboard event handler (disabled when lightbox is open)
+  const scrollToTop = () => {
+    containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Keyboard event handler
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Don't handle keys when lightbox is open (it has its own handlers)
-      if (lightboxIndex !== null) return;
+      if (lightboxIndex !== null || lightboxImage !== null) return;
 
-      const container = containerRef.current;
-      if (!container) return;
-
-      const scrollAmount = 100;
-      const largeScrollAmount = window.innerHeight * 0.8;
-
-      switch (e.key) {
-        // Close handlers
-        case 'Escape':
-        case 'Backspace':
-          e.preventDefault();
-          handleClose();
-          break;
-
-        // Scroll handlers
-        case 'ArrowDown':
-          e.preventDefault();
-          container.scrollBy({ top: scrollAmount, behavior: 'smooth' });
-          break;
-        case 'ArrowUp':
-          e.preventDefault();
-          container.scrollBy({ top: -scrollAmount, behavior: 'smooth' });
-          break;
-        case 'PageDown':
-        case ' ': // Spacebar
-          e.preventDefault();
-          container.scrollBy({ top: largeScrollAmount, behavior: 'smooth' });
-          break;
-        case 'PageUp':
-          e.preventDefault();
-          container.scrollBy({ top: -largeScrollAmount, behavior: 'smooth' });
-          break;
-        case 'Home':
-          e.preventDefault();
-          container.scrollTo({ top: 0, behavior: 'smooth' });
-          break;
-        case 'End':
-          e.preventDefault();
-          container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
-          break;
-        default:
-          break;
+      if (e.key === 'Escape' || e.key === 'Backspace') {
+        e.preventDefault();
+        handleClose();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [lightboxIndex]);
+  }, [lightboxIndex, lightboxImage]);
 
   return (
     <div
@@ -152,22 +92,21 @@ const ProjectDetail = ({ project, onClose }) => {
       </nav>
 
       {/* SCROLLABLE CONTENT LAYER */}
-      <div className="relative z-10 min-h-screen">
+      <div className="relative z-10">
 
-        {/* HERO COVER PHOTO - Full screen, immediate impact */}
+        {/* HERO COVER PHOTO */}
         <div className="h-screen w-full relative bg-black">
           <img
             src={project.cover}
             alt={project.title}
             className="w-full h-full object-cover"
           />
-          {/* Gradient overlay for text readability */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40" />
 
-          {/* Title overlay on the cover photo */}
+          {/* Title overlay */}
           <div className="absolute bottom-0 left-0 w-full p-8 md:p-16 text-white">
             <span className="block text-xs md:text-sm font-mono tracking-[0.3em] mb-4 uppercase text-crimson">
-              Project 0{project.id} — {project.subtitle}
+              {project.chapter && `${project.chapter} — `}{project.subtitle}
             </span>
             <h1 className="text-5xl md:text-8xl lg:text-9xl font-serif font-medium leading-none">
               {project.title}
@@ -181,68 +120,113 @@ const ProjectDetail = ({ project, onClose }) => {
           </div>
         </div>
 
-        {/* Spacer to reveal ink wash background */}
-        <div className="h-[15vh]" />
-
-        {/* About the Series - Section title */}
-        <FadeSection className="flex flex-col items-center justify-center min-h-[10vh] text-center px-8 mb-4">
-          <span className="block text-xs md:text-sm font-mono tracking-[0.3em] uppercase text-crimson">
-            About the Series
-          </span>
-        </FadeSection>
-
-        {/* Description */}
-        <FadeSection className="min-h-[20vh] flex items-center justify-center px-8 md:px-16 lg:px-32 mb-8">
-          <p className="text-xl md:text-3xl lg:text-4xl font-serif leading-relaxed text-stone-700 max-w-4xl text-center">
-            {project.description}
-          </p>
-        </FadeSection>
-
-        {/* Image Gallery - Each image fades in separately */}
-        <div className="space-y-[15vh] py-16">
-          {project.images.map((image, index) => (
-            <FadeSection key={index} className="flex justify-center px-4 md:px-16">
-              <div
-                className="overflow-hidden rounded-sm shadow-2xl cursor-pointer group"
-                onClick={() => openLightbox(index)}
-              >
-                <img
-                  src={getImageSrc(image)}
-                  className="w-auto h-auto max-w-full max-h-[80vh] object-contain transition-transform duration-500 group-hover:scale-[1.02]"
-                  alt={`${project.title} - Image ${index + 1}`}
-                />
+        {/* CONTENT SECTION */}
+        <div className="py-16 md:py-24">
+          {isMarkdownPost ? (
+            // NEW: Markdown-based content
+            <ContentRenderer
+              blocks={project.content}
+              onImageClick={openLightbox}
+            />
+          ) : (
+            // LEGACY: Old format with description + images array
+            <>
+              {/* About the Series */}
+              <div className="text-center px-8 mb-8">
+                <span className="block text-xs md:text-sm font-mono tracking-[0.3em] uppercase text-crimson">
+                  About the Series
+                </span>
               </div>
-            </FadeSection>
-          ))}
+
+              {/* Description */}
+              <div className="px-8 md:px-16 lg:px-32 mb-16">
+                <p className="text-xl md:text-3xl lg:text-4xl font-serif leading-relaxed text-stone-700 max-w-4xl text-center mx-auto">
+                  {project.description}
+                </p>
+              </div>
+
+              {/* Image Gallery */}
+              <div className="space-y-16 md:space-y-24">
+                {legacyImages.map((image, index) => (
+                  <div key={index} className="flex justify-center px-4 md:px-16">
+                    <div
+                      className="overflow-hidden rounded-sm shadow-2xl cursor-pointer group"
+                      onClick={() => openLegacyLightbox(index)}
+                    >
+                      <img
+                        src={getImageSrc(image)}
+                        className="w-auto h-auto max-w-full max-h-[80vh] object-contain transition-transform duration-500 group-hover:scale-[1.02]"
+                        alt={`${project.title} - Image ${index + 1}`}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
 
-        {/* Closing Quote */}
-        <FadeSection className="min-h-[30vh] flex items-center justify-center px-8">
+        {/* Closing Quote - Full screen centered */}
+        <div className="h-screen flex items-center justify-center px-8">
           <p className="font-serif italic text-xl md:text-2xl text-stone-500 text-center max-w-lg">
             "The camera is an instrument that teaches people how to see without a camera."
           </p>
-        </FadeSection>
+        </div>
 
         {/* Footer */}
-        <FadeSection className="py-12 text-center">
-          <p className="text-xs uppercase tracking-[0.3em] text-stone-400">
-            {project.title} — {project.subtitle}
-          </p>
-        </FadeSection>
+        <footer className="py-16 md:py-24 border-t border-stone-200">
+          <div className="max-w-md mx-auto text-center px-8">
+            {/* Project info */}
+            <p className="text-xs font-mono tracking-[0.3em] text-crimson uppercase mb-2">
+              {project.chapter || 'Featured'}
+            </p>
+            <h3 className="text-2xl md:text-3xl font-serif text-stone-700 mb-2">
+              {project.title}
+            </h3>
+            <p className="text-sm text-stone-500 mb-8">
+              {project.subtitle}
+            </p>
 
-        {/* Bottom spacer */}
-        <div className="h-[10vh]" />
+            {/* Back to top */}
+            <button
+              onClick={scrollToTop}
+              className="text-xs uppercase tracking-[0.2em] text-stone-400 hover:text-crimson transition-colors"
+            >
+              ↑ Back to Top
+            </button>
+          </div>
+        </footer>
       </div>
 
-      {/* Lightbox */}
-      {lightboxIndex !== null && (
+      {/* Lightbox for markdown posts - single image */}
+      {lightboxImage && (
+        <div
+          className="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center p-4 cursor-pointer"
+          onClick={closeLightbox}
+        >
+          <img
+            src={lightboxImage}
+            alt="Full size"
+            className="max-w-full max-h-full object-contain"
+          />
+          <button
+            onClick={closeLightbox}
+            className="absolute top-6 right-6 text-white/60 hover:text-white text-2xl"
+          >
+            ×
+          </button>
+        </div>
+      )}
+
+      {/* Lightbox for legacy posts */}
+      {lightboxIndex !== null && legacyImages.length > 0 && (
         <Lightbox
-          image={project.images[lightboxIndex]}
+          image={legacyImages[lightboxIndex]}
           onClose={closeLightbox}
           onPrev={prevImage}
           onNext={nextImage}
           hasPrev={lightboxIndex > 0}
-          hasNext={lightboxIndex < project.images.length - 1}
+          hasNext={lightboxIndex < legacyImages.length - 1}
         />
       )}
     </div>

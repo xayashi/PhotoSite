@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { siteConfig, projects } from './config';
+import { loadPosts, getAllChapters, LANDING_PAGE_POSTS } from './lib/posts';
 import ProjectDetail from './components/ProjectDetail';
 import AboutOverlay from './components/AboutOverlay';
 import ContactOverlay from './components/ContactOverlay';
@@ -178,8 +179,33 @@ export default function App() {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [cardTilt, setCardTilt] = useState({});
 
+  // Markdown posts state
+  const [markdownPosts, setMarkdownPosts] = useState([]);
+  const [chapters, setChapters] = useState([]);
+
+  // Combined projects (hardcoded + markdown posts)
+  // Markdown posts appear first (they have dates), followed by legacy projects
+  const allProjects = [
+    ...markdownPosts.map((post, idx) => ({
+      ...post,
+      id: `md-${post.slug || idx}`,
+    })),
+    ...projects.map((p, idx) => ({
+      ...p,
+      id: p.id || `legacy-${idx}`,
+    })),
+  ];
+
   // Check if any overlay is open
   const isOverlayOpen = selectedProject || showAbout || showContact || showArchive;
+
+  // Load markdown posts on mount
+  useEffect(() => {
+    loadPosts().then(posts => {
+      setMarkdownPosts(posts);
+      setChapters(getAllChapters(posts));
+    });
+  }, []);
 
   // Entrance animation
   useEffect(() => {
@@ -247,7 +273,7 @@ export default function App() {
       const cardMargin = getCardMargin();
       const startPadding = window.innerWidth * 0.5;
       const endSectionWidth = window.innerWidth * 0.5;
-      const totalContentWidth = startPadding + (projects.length * (cardWidth + (cardMargin * 2))) + endSectionWidth;
+      const totalContentWidth = startPadding + (allProjects.length * (cardWidth + (cardMargin * 2))) + endSectionWidth;
       return Math.max(getMinScroll(), totalContentWidth - window.innerWidth + 100);
     };
 
@@ -262,7 +288,7 @@ export default function App() {
       const cardMargin = getCardMargin();
       const cardStep = cardWidth + (cardMargin * 2);
       const index = Math.round((scroll.current - minScroll) / cardStep);
-      setCurrentCardIndex(Math.max(0, Math.min(projects.length - 1, index)));
+      setCurrentCardIndex(Math.max(0, Math.min(allProjects.length - 1, index)));
     };
 
     const handleWheel = (e) => {
@@ -362,7 +388,7 @@ export default function App() {
       window.removeEventListener('touchmove', handleTouchMove);
       cancelAnimationFrame(animationFrame);
     };
-  }, [isOverlayOpen]);
+  }, [isOverlayOpen, allProjects.length]);
 
   const handleCardClick = (id) => {
     if (focusedId === id) {
@@ -399,7 +425,7 @@ export default function App() {
       {!isOverlayOpen && (
         <ProgressIndicator
           current={currentCardIndex}
-          total={projects.length}
+          total={allProjects.length}
           scrollProgress={scrollProgress}
         />
       )}
@@ -439,7 +465,7 @@ export default function App() {
         data-scroll-container
         className={`h-full flex items-center pl-[50vw] will-change-transform ${isOverlayOpen ? 'opacity-0 scale-95 pointer-events-none transition-all duration-700' : 'opacity-100 scale-100'}`}
       >
-        {projects.map((item, index) => {
+        {allProjects.map((item, index) => {
           const isFocused = focusedId === item.id;
           const isHovered = hoveredId === item.id;
           const tilt = cardTilt[item.id] || { rotateX: 0, rotateY: 0 };
@@ -515,7 +541,7 @@ export default function App() {
 
               {/* Background Number */}
               <div className="absolute -top-32 -left-10 text-[10rem] font-bold text-white/5 z-10 select-none font-serif pointer-events-none">
-                0{item.id}
+                {String(index + 1).padStart(2, '0')}
               </div>
             </div>
           );
@@ -525,7 +551,7 @@ export default function App() {
         <div
           className={`w-[50vw] flex-shrink-0 flex flex-col items-start justify-center gap-6 pl-12 transition-all duration-1000
             ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
-          style={{ transitionDelay: `${300 + projects.length * 100 + 200}ms` }}
+          style={{ transitionDelay: `${300 + allProjects.length * 100 + 200}ms` }}
         >
           <button
             onClick={() => setShowArchive(true)}
@@ -564,7 +590,14 @@ export default function App() {
       )}
 
       {showArchive && (
-        <ArchiveOverlay onClose={() => setShowArchive(false)} />
+        <ArchiveOverlay
+          chapters={chapters}
+          onClose={() => setShowArchive(false)}
+          onSelectPost={(post) => {
+            setShowArchive(false);
+            setSelectedProject(post);
+          }}
+        />
       )}
     </div>
   );
