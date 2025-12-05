@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { ArrowLeft, Share2 } from 'lucide-react';
 import Lightbox from './Lightbox';
 import ContentRenderer from './content/ContentRenderer';
+import OptimizedImage from './OptimizedImage';
 
 const ProjectDetail = ({ project, onClose }) => {
   const [visible, setVisible] = useState(false);
@@ -94,12 +95,16 @@ const ProjectDetail = ({ project, onClose }) => {
       {/* SCROLLABLE CONTENT LAYER */}
       <div className="relative z-10">
 
-        {/* HERO COVER PHOTO */}
+        {/* HERO COVER PHOTO - Optimized */}
         <div className="h-screen w-full relative bg-black">
-          <img
+          <OptimizedImage
             src={project.cover}
+            fullSrc={project.cover}
+            width={1920}
+            quality={85}
+            priority={true}
             alt={project.title}
-            className="w-full h-full object-cover"
+            className="w-full h-full"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40" />
 
@@ -145,18 +150,20 @@ const ProjectDetail = ({ project, onClose }) => {
                 </p>
               </div>
 
-              {/* Image Gallery */}
+              {/* Image Gallery - Optimized */}
               <div className="space-y-16 md:space-y-24">
                 {legacyImages.map((image, index) => (
                   <div key={index} className="flex justify-center px-4 md:px-16">
-                    <div
-                      className="overflow-hidden rounded-sm shadow-2xl cursor-pointer group"
-                      onClick={() => openLegacyLightbox(index)}
-                    >
-                      <img
+                    <div className="overflow-hidden rounded-sm shadow-2xl cursor-pointer group max-w-full">
+                      <OptimizedImage
                         src={getImageSrc(image)}
-                        className="w-auto h-auto max-w-full max-h-[80vh] object-contain transition-transform duration-500 group-hover:scale-[1.02]"
+                        fullSrc={getImageSrc(image)}
+                        width={1200}
+                        quality={80}
                         alt={`${project.title} - Image ${index + 1}`}
+                        onClick={() => openLegacyLightbox(index)}
+                        className="max-h-[80vh]"
+                        imgClassName="w-auto h-auto max-w-full max-h-[80vh] object-contain group-hover:scale-[1.02] transition-transform duration-500"
                       />
                     </div>
                   </div>
@@ -198,7 +205,7 @@ const ProjectDetail = ({ project, onClose }) => {
         </footer>
       </div>
 
-      {/* Lightbox for markdown posts - single image */}
+      {/* Lightbox for markdown posts - single image (full resolution) */}
       {lightboxImage && (
         <div
           className="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center p-4 cursor-pointer"
@@ -218,7 +225,7 @@ const ProjectDetail = ({ project, onClose }) => {
         </div>
       )}
 
-      {/* Lightbox for legacy posts */}
+      {/* Lightbox for legacy posts (full resolution) */}
       {lightboxIndex !== null && legacyImages.length > 0 && (
         <Lightbox
           image={legacyImages[lightboxIndex]}

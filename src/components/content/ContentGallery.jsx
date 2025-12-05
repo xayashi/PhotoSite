@@ -1,16 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
+import OptimizedImage from '../OptimizedImage';
 
 /**
  * Image gallery component - displays multiple images in a grid
- * Supports both portrait and landscape orientations
+ * Uses OptimizedImage for Vercel optimization
  */
 const ContentGallery = ({ images, onImageClick }) => {
-    const [loadedImages, setLoadedImages] = useState({});
-
-    const handleImageLoad = (index) => {
-        setLoadedImages(prev => ({ ...prev, [index]: true }));
-    };
-
     // Determine grid layout based on number of images
     const getGridClass = () => {
         const count = images.length;
@@ -27,20 +22,18 @@ const ContentGallery = ({ images, onImageClick }) => {
                 <div
                     key={index}
                     className="relative overflow-hidden rounded-sm shadow-lg cursor-pointer group aspect-[4/3]"
-                    onClick={() => onImageClick?.(src, index)}
                 >
-                    {/* Skeleton loader */}
-                    {!loadedImages[index] && (
-                        <div className="absolute inset-0 bg-stone-200 animate-pulse" />
-                    )}
-
-                    <img
+                    <OptimizedImage
                         src={src}
+                        fullSrc={src}
+                        width={600}
+                        quality={80}
                         alt={`Gallery image ${index + 1}`}
-                        onLoad={() => handleImageLoad(index)}
-                        className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105
-              ${loadedImages[index] ? 'opacity-100' : 'opacity-0'}`}
+                        onClick={() => onImageClick?.(src, index)}
+                        className="w-full h-full"
                     />
+                    {/* Hover overlay */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 pointer-events-none" />
                 </div>
             ))}
         </div>
