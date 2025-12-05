@@ -26,7 +26,7 @@ const ContentGallery = ({ images, onImageClick }) => {
                     <OptimizedImage
                         src={src}
                         fullSrc={src}
-                        width={600}
+                        width={640}
                         quality={80}
                         alt={`Gallery image ${index + 1}`}
                         onClick={() => onImageClick?.(src, index)}
