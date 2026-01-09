@@ -1,0 +1,499 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom stroke text effect for titles */
+.stroke-text {
+  -webkit-text-stroke: 0.5px rgba(255, 255, 255, 0.8);
+}
+
+@media (min-width: 768px) {
+  .stroke-text {
+    -webkit-text-stroke: 1px rgba(255, 255, 255, 0.8);
+  }
+}
+
+/* Smooth scrolling for the whole document */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Hide scrollbar but keep functionality */
+body {
+  overflow: hidden;
+  background-color: #121212;
+}
+
+/* Hide default cursor on desktop when custom cursor is active */
+@media (min-width: 768px) {
+  body {
+    cursor: none;
+  }
+
+  a,
+  button,
+  [data-card] {
+    cursor: none;
+  }
+}
+
+/* Custom selection color */
+::selection {
+  background-color: rgba(196, 30, 58, 0.3);
+  color: white;
+}
+
+/* Entrance animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 1s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slideInFromBottom 0.6s ease-out forwards;
+}
+
+/* Kintsugi background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url('/background.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.06;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Film grain texture overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.02;
+  pointer-events: none;
+  z-index: 9998;
+}
+
+/* Logo hover - red color with grow */
+.logo-interactive {
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.logo-interactive:hover {
+  filter: brightness(0) saturate(100%) invert(18%) sepia(90%) saturate(2000%) hue-rotate(340deg) brightness(0.9);
+  transform: scale(1.08);
+}
+
+/* ============================================
+   UX IMPROVEMENTS - Progress Indicator
+   ============================================ */
+.progress-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(196, 30, 58, 0.8), transparent);
+  transition: width 0.3s ease-out;
+  z-index: 50;
+}
+
+.progress-dots {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.progress-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.progress-dot.active {
+  background: rgba(196, 30, 58, 0.8);
+  transform: scale(1.3);
+}
+
+.progress-dot.passed {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* ============================================
+   UX IMPROVEMENTS - Card 3D Tilt Effect
+   ============================================ */
+.card-3d-container {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+.card-3d {
+  transition: transform 0.15s ease-out, box-shadow 0.3s ease;
+  transform-style: preserve-3d;
+}
+
+.card-3d:hover {
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+/* Card lift effect on hover */
+.card-lift {
+  transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.card-lift:hover {
+  transform: translateY(-8px) translateZ(20px);
+}
+
+/* ============================================
+   UX IMPROVEMENTS - Image Loading Effects
+   ============================================ */
+.image-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.image-blur-placeholder {
+  position: absolute;
+  inset: 0;
+  filter: blur(20px);
+  transform: scale(1.1);
+  transition: opacity 0.5s ease-out;
+}
+
+.image-blur-placeholder.loaded {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.image-main {
+  opacity: 0;
+  transition: opacity 0.5s ease-out, filter 0.7s ease, transform 0.7s ease;
+}
+
+.image-main.loaded {
+  opacity: 1;
+}
+
+/* Skeleton loading animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0.03) 25%,
+      rgba(255, 255, 255, 0.08) 50%,
+      rgba(255, 255, 255, 0.03) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* ============================================
+   UX IMPROVEMENTS - Color Reveal on Hover
+   ============================================ */
+.color-reveal {
+  filter: grayscale(100%);
+  transition: filter 0.6s cubic-bezier(0.23, 1, 0.32, 1),
+    transform 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.color-reveal:hover,
+.color-reveal.revealed {
+  filter: grayscale(0%);
+}
+
+/* ============================================
+   UX IMPROVEMENTS - Swipe Hint Animation
+   ============================================ */
+@keyframes swipeHint {
+
+  0%,
+  100% {
+    transform: translateX(0);
+    opacity: 0.6;
+  }
+
+  50% {
+    transform: translateX(-20px);
+    opacity: 1;
+  }
+}
+
+@keyframes swipeHintFade {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+.swipe-hint {
+  animation: swipeHint 1.5s ease-in-out infinite;
+}
+
+.swipe-hint.dismissed {
+  animation: swipeHintFade 0.5s ease-out forwards;
+}
+
+/* ============================================
+   UX IMPROVEMENTS - Staggered Letter Animation
+   ============================================ */
+@keyframes letterReveal {
+  from {
+    opacity: 0;
+    transform: translateY(20px) rotateX(-20deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) rotateX(0);
+  }
+}
+
+.letter-animate {
+  display: inline-block;
+  opacity: 0;
+  animation: letterReveal 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.title-reveal {
+  perspective: 500px;
+}
+
+/* ============================================
+   Reduced Motion Preferences
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .swipe-hint {
+    animation: none;
+  }
+
+  .letter-animate {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .card-3d,
+  .card-lift {
+    transition: none;
+  }
+}
+
+/* ============================================
+   Custom Scrollbar - Minimal & Elegant
+   ============================================ */
+/* For Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(196, 30, 58, 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(196, 30, 58, 0.6);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(196, 30, 58, 0.3) transparent;
+}
+
+/* Hide scrollbar completely but keep functionality */
+.scrollbar-hidden {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+
+/* ============================================
+   Markdown Content Styling
+   ============================================ */
+.content-html {
+  color: #44403c;
+  /* stone-700 */
+}
+
+.content-html p {
+  font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  font-size: 1.25rem;
+  line-height: 1.8;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  max-width: 48rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 1rem;
+}
+
+.content-html h2 {
+  font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  font-size: 2rem;
+  font-weight: 500;
+  text-align: center;
+  margin: 3rem 0 1.5rem;
+  color: #1c1917;
+  /* stone-900 */
+}
+
+.content-html h3 {
+  font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  font-size: 1.5rem;
+  font-weight: 500;
+  text-align: center;
+  margin: 2rem 0 1rem;
+  color: #292524;
+  /* stone-800 */
+}
+
+.content-html blockquote {
+  font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  font-style: italic;
+  font-size: 1.25rem;
+  text-align: center;
+  color: #78716c;
+  /* stone-500 */
+  border-left: none;
+  padding: 2rem;
+  margin: 2rem auto;
+  max-width: 36rem;
+  position: relative;
+}
+
+.content-html blockquote::before {
+  content: '\201C';
+  font-size: 4rem;
+  color: rgba(196, 30, 58, 0.2);
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  line-height: 1;
+}
+
+.content-html img {
+  max-width: 100%;
+  max-height: 80vh;
+  width: auto;
+  height: auto;
+  margin: 2rem auto;
+  display: block;
+  border-radius: 0.125rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.content-html a {
+  color: #c41e3a;
+  /* crimson */
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.content-html a:hover {
+  color: #a01830;
+}
+
+.content-html strong {
+  font-weight: 600;
+  color: #1c1917;
+}
+
+.content-html em {
+  font-style: italic;
+}
+
+.content-html ul,
+.content-html ol {
+  max-width: 36rem;
+  margin: 1.5rem auto;
+  padding-left: 1.5rem;
+}
+
+.content-html li {
+  font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  font-size: 1.125rem;
+  line-height: 1.75;
+  margin-bottom: 0.5rem;
+}
+
+.content-html hr {
+  border: none;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  margin: 3rem auto;
+  max-width: 8rem;
+}
