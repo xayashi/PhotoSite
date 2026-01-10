@@ -502,26 +502,27 @@ body::after {
    MOBILE PERFORMANCE OPTIMIZATIONS
    ============================================ */
 @media (max-width: 767px) {
+
   /* Disable 3D tilt transitions on mobile to save CPU */
   .card-3d {
     transition: none !important;
     transform: none !important;
   }
-  
+
   /* Simplify letter reveal animations on mobile */
   .letter-animate {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
   }
-  
+
   /* Faster, simpler color reveal for touch interactions */
   .color-reveal {
     transition: filter 0.3s ease !important;
   }
-  
-  /* Optimization: Ensure images don't cause layout shifts */
-  .image-container {
+
+  /* Only apply 4/5 aspect ratio to landing page cards, NOT hero images */
+  .card-3d-container .image-container {
     aspect-ratio: 4/5;
     background-color: #121212;
   }
