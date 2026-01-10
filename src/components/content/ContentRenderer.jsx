@@ -17,7 +17,6 @@ const ContentRenderer = ({ blocks, onImageClick }) => {
             {blocks.map((block, index) => {
                 switch (block.type) {
                     case 'html':
-                    case 'html':
                         return (
                             <ContentHTML
                                 key={index}
@@ -27,7 +26,6 @@ const ContentRenderer = ({ blocks, onImageClick }) => {
                         );
 
                     case 'gallery':
-                    case 'gallery':
                         return (
                             <ContentGallery
                                 key={index}
@@ -36,7 +34,6 @@ const ContentRenderer = ({ blocks, onImageClick }) => {
                             />
                         );
 
-                    case 'youtube':
                     case 'youtube':
                         return (
                             <ContentVideo
