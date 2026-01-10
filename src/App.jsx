@@ -148,6 +148,8 @@ export default function App() {
   const touchRef = useRef({ startX: 0, startY: 0 });
   const cardRefs = useRef({});
   const progressBarRef = useRef(null);
+  const currentCardIndexRef = useRef(0);
+  const lastSkewAppliedRef = useRef(0);
 
   // Interaction States
   const [focusedId, setFocusedId] = useState(null);
@@ -287,8 +289,10 @@ export default function App() {
       const index = Math.round((scroll.current - minScroll) / cardStep);
       const newIndex = Math.max(0, Math.min(allProjects.length - 1, index));
 
-      // Only update state if index changed
-      setCurrentCardIndex(prev => prev !== newIndex ? newIndex : prev);
+      // Update ref instead of state to avoid re-renders on every scroll movement
+      if (currentCardIndexRef.current !== newIndex) {
+        currentCardIndexRef.current = newIndex;
+      }
     };
 
     const handleWheel = (e) => {
@@ -371,11 +375,15 @@ export default function App() {
 
         // Optimization: Skip skew effect on mobile
         if (window.innerWidth >= 768) {
-          Object.values(cardRefs.current).forEach(card => {
-            if (card && !card.dataset.focused) {
-              card.style.transform = `skewX(${-scroll.skew}deg)`;
-            }
-          });
+          // Only apply skew if it has changed significantly
+          if (Math.abs(scroll.skew - lastSkewAppliedRef.current) > 0.05) {
+            Object.values(cardRefs.current).forEach(card => {
+              if (card && !card.dataset.focused) {
+                card.style.transform = `skewX(${-scroll.skew}deg)`;
+              }
+            });
+            lastSkewAppliedRef.current = scroll.skew;
+          }
         }
       }
 
@@ -418,7 +426,7 @@ export default function App() {
     return {
       width: isMobile ? 'clamp(280px, 85vw, 360px)' : 'clamp(280px, 40vh, 400px)',
       height: isMobile ? 'auto' : 'clamp(400px, 60vh, 600px)',
-      aspectRatio: isMobile ? '3/4' : 'unset',
+      aspectRatio: isMobile ? '4/5' : 'unset',
     };
   };
 
@@ -512,7 +520,10 @@ export default function App() {
                       ${isFocused ? 'scale-100 revealed' : 'scale-110'}
                       ${isHovered ? 'revealed' : ''}
                     `}
-                  style={{ objectFit: 'cover', objectPosition: 'center' }}
+                  style={{
+                    objectFit: 'cover',
+                    objectPosition: 'center'
+                  }}
                 />
 
                 {/* The "View" Prompt - Only visible when focused */}
@@ -603,8 +614,6 @@ export default function App() {
           }}
         />
       )}
-      {/* Custom Cursor */}
-      <CustomCursor />
     </div>
   );
 }
