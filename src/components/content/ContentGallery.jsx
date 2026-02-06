@@ -5,7 +5,7 @@ import OptimizedImage from '../OptimizedImage';
  * Image gallery component - displays multiple images in a grid
  * Uses OptimizedImage for Vercel optimization
  */
-const ContentGallery = ({ images, onImageClick }) => {
+const ContentGallery = ({ images, onImageClick, startIndex = 0 }) => {
     // Determine grid layout based on number of images
     const getGridClass = () => {
         const count = images.length;
@@ -29,7 +29,7 @@ const ContentGallery = ({ images, onImageClick }) => {
                         width={640}
                         quality={80}
                         alt={`Gallery image ${index + 1}`}
-                        onClick={() => onImageClick?.(src, index)}
+                        onClick={() => onImageClick?.(src, startIndex + index)}
                         className="w-full h-full"
                         sizes="(max-width: 768px) 50vw, 33vw"
                         widths={[640, 828, 1080]}

@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- Unified lightbox with prev/next navigation for markdown gallery posts (was single-image only)
+- `startIndex` prop on `ContentGallery` for global image indexing across multiple galleries
+- Visible error fallback (broken image icon + "Image unavailable" text) on `OptimizedImage` and `LazyImage`
 - Vendor chunk splitting in Vite config (`vendor-react`, `vendor-markdown`, `vendor-icons`)
 - `React.lazy()` + `Suspense` code splitting for overlay components (ProjectDetail, AboutOverlay, ContactOverlay, ArchiveOverlay)
 - `<link rel="preload">` for font stylesheet and logo in `index.html`
@@ -40,6 +43,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Accessibility: Film grain disabled under `prefers-reduced-motion`
 
 ### Changed
+- `ProjectDetail` lightbox unified: single state drives both markdown and legacy lightbox (removed separate `lightboxImage` string state)
+- `ContentRenderer` pre-computes gallery start indices for global image offset tracking
 - Lightbox, AboutOverlay, ArchiveOverlay now use `OptimizedImage` instead of raw `<img>` for responsive image serving
 - Replaced 3D card tilt hover effect with subtle `scale(1.03)` + box-shadow
 - Replaced card skew wobble with parallax depth effect (cards near center scale to 1.0, edge cards to 0.95)

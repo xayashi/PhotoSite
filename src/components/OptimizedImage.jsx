@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Maximize2 } from 'lucide-react';
+import { Maximize2, ImageOff } from 'lucide-react';
 
 /**
  * OptimizedImage component with responsive image support
@@ -108,8 +108,16 @@ const OptimizedImage = ({
             data-cursor={onClick ? "click" : undefined}
         >
             {/* Skeleton loader */}
-            {!isLoaded && (
+            {!isLoaded && !hasError && (
                 <div className="absolute inset-0 bg-stone-200 animate-pulse" />
+            )}
+
+            {/* Error fallback */}
+            {hasError && (
+                <div className="absolute inset-0 bg-stone-100 flex flex-col items-center justify-center gap-2 text-stone-400">
+                    <ImageOff size={24} />
+                    <span className="text-xs font-mono tracking-wider">Image unavailable</span>
+                </div>
             )}
 
             {/* Use picture element for format negotiation */}

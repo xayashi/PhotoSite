@@ -12,6 +12,18 @@ const ContentRenderer = ({ blocks, onImageClick }) => {
         return null;
     }
 
+    // Pre-compute gallery start indices so each gallery knows its global offset
+    const galleryStartIndices = [];
+    let runningIndex = 0;
+    blocks.forEach((block) => {
+        if (block.type === 'gallery') {
+            galleryStartIndices.push(runningIndex);
+            runningIndex += block.images.length;
+        }
+    });
+
+    let galleryCount = 0;
+
     return (
         <div className="content-renderer space-y-12">
             {blocks.map((block, index) => {
@@ -21,18 +33,21 @@ const ContentRenderer = ({ blocks, onImageClick }) => {
                             <ContentHTML
                                 key={index}
                                 content={block.content}
-                                onImageClick={(src) => onImageClick?.(src)}
+                                onImageClick={(src) => onImageClick?.(src, -1)}
                             />
                         );
 
-                    case 'gallery':
+                    case 'gallery': {
+                        const startIndex = galleryStartIndices[galleryCount++];
                         return (
                             <ContentGallery
                                 key={index}
                                 images={block.images}
-                                onImageClick={(src) => onImageClick?.(src)}
+                                startIndex={startIndex}
+                                onImageClick={(src, globalIndex) => onImageClick?.(src, globalIndex)}
                             />
                         );
+                    }
 
                     case 'youtube':
                         return (

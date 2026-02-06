@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { ArrowLeft, Share2, Check } from 'lucide-react';
 import Lightbox from './Lightbox';
 import ContentRenderer from './content/ContentRenderer';
@@ -6,7 +6,6 @@ import OptimizedImage from './OptimizedImage';
 
 const ProjectDetail = ({ project, onClose }) => {
   const [visible, setVisible] = useState(false);
-  const [lightboxImage, setLightboxImage] = useState(null);
   const [showToast, setShowToast] = useState(false);
   const containerRef = useRef(null);
 
@@ -15,22 +14,50 @@ const ProjectDetail = ({ project, onClose }) => {
 
   // For legacy posts, get all images for lightbox
   const legacyImages = !isMarkdownPost && project.images ? project.images : [];
+
+  // For markdown posts, collect all gallery images into a flat array
+  const allPostImages = useMemo(() => {
+    if (!isMarkdownPost) return [];
+    const images = [];
+    project.content.forEach(block => {
+      if (block.type === 'gallery') {
+        block.images.forEach(src => images.push(src));
+      }
+    });
+    return images;
+  }, [project.content, isMarkdownPost]);
+
+  // Unified lightbox state
   const [lightboxIndex, setLightboxIndex] = useState(null);
+  const [lightboxImages, setLightboxImages] = useState([]);
 
   // Helper to get image src (supports both string URLs and objects with metadata)
   const getImageSrc = (image) => typeof image === 'string' ? image : image.src;
 
-  // Lightbox handlers
-  const openLightbox = (src) => setLightboxImage(src);
+  // Unified lightbox handlers
+  const openLightbox = (src, globalIndex) => {
+    if (globalIndex >= 0 && allPostImages.length > 0) {
+      // Gallery image with navigation
+      setLightboxImages(allPostImages);
+      setLightboxIndex(globalIndex);
+    } else {
+      // Inline HTML image — single image, no navigation
+      setLightboxImages([src]);
+      setLightboxIndex(0);
+    }
+  };
   const closeLightbox = () => {
-    setLightboxImage(null);
     setLightboxIndex(null);
+    setLightboxImages([]);
   };
 
   // Legacy lightbox navigation
-  const openLegacyLightbox = (index) => setLightboxIndex(index);
+  const openLegacyLightbox = (index) => {
+    setLightboxImages(legacyImages);
+    setLightboxIndex(index);
+  };
   const prevImage = () => setLightboxIndex((i) => Math.max(0, i - 1));
-  const nextImage = () => setLightboxIndex((i) => Math.min(legacyImages.length - 1, i + 1));
+  const nextImage = () => setLightboxIndex((i) => Math.min(lightboxImages.length - 1, i + 1));
 
   useEffect(() => {
     setTimeout(() => setVisible(true), 50);
@@ -68,7 +95,7 @@ const ProjectDetail = ({ project, onClose }) => {
   // Keyboard event handler
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (lightboxIndex !== null || lightboxImage !== null) return;
+      if (lightboxIndex !== null) return;
 
       if (e.key === 'Escape' || e.key === 'Backspace') {
         e.preventDefault();
@@ -78,7 +105,7 @@ const ProjectDetail = ({ project, onClose }) => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [lightboxIndex, lightboxImage]);
+  }, [lightboxIndex]);
 
   return (
     <div
@@ -245,29 +272,17 @@ const ProjectDetail = ({ project, onClose }) => {
       </div>
 
 
-      {/* Lightbox for markdown posts - single image (Portal-based) */}
-      {
-        lightboxImage && (
-          <Lightbox
-            image={lightboxImage}
-            onClose={closeLightbox}
-          />
-        )
-      }
-
-      {/* Lightbox for legacy posts (Portal-based) */}
-      {
-        lightboxIndex !== null && legacyImages.length > 0 && (
-          <Lightbox
-            image={legacyImages[lightboxIndex]}
-            onClose={closeLightbox}
-            onPrev={prevImage}
-            onNext={nextImage}
-            hasPrev={lightboxIndex > 0}
-            hasNext={lightboxIndex < legacyImages.length - 1}
-          />
-        )
-      }
+      {/* Unified lightbox for both markdown and legacy posts */}
+      {lightboxIndex !== null && lightboxImages.length > 0 && (
+        <Lightbox
+          image={lightboxImages[lightboxIndex]}
+          onClose={closeLightbox}
+          onPrev={prevImage}
+          onNext={nextImage}
+          hasPrev={lightboxIndex > 0}
+          hasNext={lightboxIndex < lightboxImages.length - 1}
+        />
+      )}
     </div >
   );
 };
