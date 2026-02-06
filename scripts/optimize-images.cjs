@@ -132,15 +132,59 @@ async function optimizeImage(config) {
   console.log(`  💾 Space saved: ${Math.round(totalSaved / 1024 / 1024)}MB\n`);
 }
 
+// Auto-discover images from content posts
+function discoverPostImages() {
+  const postsDir = path.join(__dirname, '..', 'public', 'content', 'posts');
+  const discovered = [];
+
+  if (!fs.existsSync(postsDir)) return discovered;
+
+  const slugs = fs.readdirSync(postsDir, { withFileTypes: true })
+    .filter(d => d.isDirectory())
+    .map(d => d.name);
+
+  for (const slug of slugs) {
+    const postDir = path.join(postsDir, slug);
+    const images = fs.readdirSync(postDir)
+      .filter(f => /\.(jpg|jpeg|png)$/i.test(f));
+
+    for (const img of images) {
+      const ext = path.extname(img);
+      const name = path.basename(img, ext);
+      discovered.push({
+        name: `posts-${slug}-${name}`,
+        input: path.join(postDir, img),
+        isAbsolute: true,
+        widths: [640, 828, 1080, 1920],
+        quality: { jpg: 80, webp: 82 },
+      });
+    }
+  }
+
+  return discovered;
+}
+
 // Main execution
 async function main() {
-  console.log('🚀 Starting image optimization...\n');
+  console.log('Starting image optimization...\n');
   console.log('=' .repeat(60));
 
   createDirectories();
 
+  // Discover post images
+  const postImages = discoverPostImages();
+  if (postImages.length > 0) {
+    console.log(`Found ${postImages.length} images in content posts\n`);
+    for (const img of postImages) {
+      const dir = path.join(OUTPUT_DIR, img.name);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+    }
+  }
+
   console.log('=' .repeat(60));
-  console.log('\n📸 Optimizing Images\n');
+  console.log('\nOptimizing Images\n');
   console.log('=' .repeat(60));
   console.log();
 
@@ -149,8 +193,47 @@ async function main() {
     await optimizeImage(config);
   }
 
+  // Optimize post images
+  if (postImages.length > 0) {
+    console.log('=' .repeat(60));
+    console.log('\nOptimizing Post Images\n');
+    console.log('=' .repeat(60));
+    console.log();
+
+    for (const config of postImages) {
+      const inputPath = config.isAbsolute ? config.input : path.join(INPUT_DIR, config.input);
+      const outputDir = path.join(OUTPUT_DIR, config.name);
+
+      if (!fs.existsSync(inputPath)) continue;
+
+      console.log(`Processing: ${config.name}`);
+      const metadata = await sharp(inputPath).metadata();
+      console.log(`  Original: ${metadata.width}x${metadata.height}`);
+
+      for (const width of config.widths) {
+        if (width > metadata.width) continue;
+        try {
+          await sharp(inputPath)
+            .resize(width, null, { withoutEnlargement: true, fit: 'inside' })
+            .webp({ quality: config.quality.webp })
+            .toFile(path.join(outputDir, `${config.name}-${width}w.webp`));
+
+          await sharp(inputPath)
+            .resize(width, null, { withoutEnlargement: true, fit: 'inside' })
+            .jpeg({ quality: config.quality.jpg, mozjpeg: true })
+            .toFile(path.join(outputDir, `${config.name}-${width}w.jpg`));
+
+          console.log(`  ${width}w done`);
+        } catch (error) {
+          console.log(`  Error at ${width}w: ${error.message}`);
+        }
+      }
+      console.log();
+    }
+  }
+
   console.log('=' .repeat(60));
-  console.log('\n🎨 Optimizing Backgrounds\n');
+  console.log('\nOptimizing Backgrounds\n');
   console.log('=' .repeat(60));
   console.log();
 
@@ -161,17 +244,13 @@ async function main() {
 
   // Calculate total savings
   console.log('=' .repeat(60));
-  console.log('\n📊 Optimization Summary\n');
+  console.log('\nOptimization Summary\n');
   console.log('=' .repeat(60));
   console.log();
-
-  const optimizedPath = path.join(OUTPUT_DIR);
-  let totalOptimizedSize = 0;
 
   function getDirectorySize(dirPath) {
     let size = 0;
     const files = fs.readdirSync(dirPath, { withFileTypes: true });
-
     for (const file of files) {
       const filePath = path.join(dirPath, file.name);
       if (file.isDirectory()) {
@@ -183,17 +262,9 @@ async function main() {
     return size;
   }
 
-  totalOptimizedSize = getDirectorySize(optimizedPath);
-
-  console.log(`📦 Original images: ~72MB`);
-  console.log(`📦 Optimized images: ${Math.round(totalOptimizedSize / 1024 / 1024)}MB`);
-  console.log(`💰 Total savings: ~${Math.round(72 - totalOptimizedSize / 1024 / 1024)}MB (${Math.round((72 - totalOptimizedSize / 1024 / 1024) / 72 * 100)}% reduction)`);
-  console.log();
-  console.log('✨ Optimization complete!\n');
-  console.log('Next steps:');
-  console.log('1. Update OptimizedImage.jsx to use srcset');
-  console.log('2. Update config.js with new image paths');
-  console.log('3. Run Lighthouse audit to verify improvements');
+  const totalOptimizedSize = getDirectorySize(OUTPUT_DIR);
+  console.log(`Optimized images total: ${Math.round(totalOptimizedSize / 1024 / 1024)}MB`);
+  console.log('\nOptimization complete!');
 }
 
 // Run the script

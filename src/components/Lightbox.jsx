@@ -1,8 +1,12 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useFocusTrap } from '../hooks/useFocusTrap';
+import OptimizedImage from './OptimizedImage';
 
 const Lightbox = ({ image, onClose, onPrev, onNext, hasPrev, hasNext }) => {
+  const trapRef = useFocusTrap(true);
+
   // Handle keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -21,12 +25,17 @@ const Lightbox = ({ image, onClose, onPrev, onNext, hasPrev, hasNext }) => {
 
   // Use portal to render at document.body level (bypasses transformed parents)
   return createPortal(
-    <div 
+    <div
+      ref={trapRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Image viewer"
       className="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center animate-fade-in"
       onClick={onClose}
     >
       {/* Close button */}
-      <button 
+      <button
+        aria-label="Close lightbox"
         className="absolute top-6 right-6 text-white/60 hover:text-white transition-colors z-10"
         onClick={onClose}
       >
@@ -35,7 +44,8 @@ const Lightbox = ({ image, onClose, onPrev, onNext, hasPrev, hasNext }) => {
 
       {/* Navigation arrows */}
       {hasPrev && (
-        <button 
+        <button
+          aria-label="Previous image"
           className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors p-2"
           onClick={(e) => { e.stopPropagation(); onPrev(); }}
         >
@@ -43,7 +53,8 @@ const Lightbox = ({ image, onClose, onPrev, onNext, hasPrev, hasNext }) => {
         </button>
       )}
       {hasNext && (
-        <button 
+        <button
+          aria-label="Next image"
           className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors p-2"
           onClick={(e) => { e.stopPropagation(); onNext(); }}
         >
@@ -56,10 +67,13 @@ const Lightbox = ({ image, onClose, onPrev, onNext, hasPrev, hasNext }) => {
         className="max-w-[90vw] max-h-[90vh] flex flex-col items-center px-16"
         onClick={(e) => e.stopPropagation()}
       >
-        <img 
-          src={src} 
-          alt={caption || ''} 
-          className="max-w-full max-h-[75vh] object-contain rounded-sm"
+        <OptimizedImage
+          src={src}
+          alt={caption || ''}
+          className="max-w-full max-h-[75vh]"
+          imgClassName="!object-contain rounded-sm"
+          sizes="90vw"
+          priority
         />
         
         {/* Caption & EXIF */}

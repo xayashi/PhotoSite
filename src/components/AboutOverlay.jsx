@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { X, MapPin, Calendar } from 'lucide-react';
 import { siteConfig } from '../config';
+import { useFocusTrap } from '../hooks/useFocusTrap';
+import OptimizedImage from './OptimizedImage';
 
 const AboutOverlay = ({ onClose }) => {
   const [visible, setVisible] = useState(false);
   const { about } = siteConfig;
+  const trapRef = useFocusTrap(visible);
 
   useEffect(() => {
     setTimeout(() => setVisible(true), 50);
@@ -17,12 +20,17 @@ const AboutOverlay = ({ onClose }) => {
 
   return (
     <div
+      ref={trapRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label="About"
       className={`fixed inset-0 z-[100] bg-[#121212] text-white overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.76,0,0.24,1)]
       ${visible ? 'opacity-100' : 'opacity-0'}`}
     >
       {/* Close Button */}
       <button
         onClick={handleClose}
+        aria-label="Close"
         className="fixed top-6 right-6 md:top-8 md:right-8 z-50 p-2 hover:text-crimson transition-colors"
       >
         <X size={24} />
@@ -32,10 +40,12 @@ const AboutOverlay = ({ onClose }) => {
       <div className="min-h-screen flex flex-col md:flex-row">
         {/* Portrait Side */}
         <div className={`w-full md:w-1/2 h-[50vh] md:h-screen relative overflow-hidden transition-all duration-1000 delay-100 ${visible ? 'opacity-100' : 'opacity-0'}`}>
-          <img
+          <OptimizedImage
             src={about.portrait}
             alt="Photographer portrait"
-            className={`w-full h-full object-cover transition-transform duration-[2000ms] ${visible ? 'scale-100' : 'scale-110'}`}
+            className="w-full h-full"
+            imgClassName={`transition-transform duration-[2000ms] ${visible ? 'scale-100' : 'scale-110'}`}
+            sizes="(min-width: 768px) 50vw, 100vw"
           />
           <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-[#0a0a0a] via-transparent to-transparent"></div>
         </div>

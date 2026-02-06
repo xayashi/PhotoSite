@@ -45,6 +45,7 @@ With over a decade behind the lens, I've developed a distinctive style that emph
 export const projects = [
   {
     id: 1,
+    slug: "mono",
     title: "Mono",
     subtitle: "Tokyo, 2024",
     cover: "/images/landscape.jpg",
@@ -64,6 +65,7 @@ export const projects = [
   },
   {
     id: 2,
+    slug: "lumina",
     title: "Lumina",
     subtitle: "Iceland, 2024",
     cover: "/images/portrait.jpg",
@@ -76,6 +78,7 @@ export const projects = [
   },
   {
     id: 3,
+    slug: "vertex",
     title: "Vertex",
     subtitle: "New York, 2023",
     cover: "/images/landscape.jpg",
@@ -88,6 +91,7 @@ export const projects = [
   },
   {
     id: 4,
+    slug: "aether",
     title: "Aether",
     subtitle: "Highlands, 2023",
     cover: "/images/portrait.jpg",
@@ -99,6 +103,7 @@ export const projects = [
   },
   {
     id: 5,
+    slug: "epoch",
     title: "Epoch",
     subtitle: "Rome, 2022",
     cover: "/images/landscape.jpg",

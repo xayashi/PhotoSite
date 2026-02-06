@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { ArrowLeft, Share2 } from 'lucide-react';
+import { ArrowLeft, Share2, Check } from 'lucide-react';
 import Lightbox from './Lightbox';
 import ContentRenderer from './content/ContentRenderer';
 import OptimizedImage from './OptimizedImage';
@@ -7,6 +7,7 @@ import OptimizedImage from './OptimizedImage';
 const ProjectDetail = ({ project, onClose }) => {
   const [visible, setVisible] = useState(false);
   const [lightboxImage, setLightboxImage] = useState(null);
+  const [showToast, setShowToast] = useState(false);
   const containerRef = useRef(null);
 
   // Check if this is a markdown-based post (has content array)
@@ -47,6 +48,23 @@ const ProjectDetail = ({ project, onClose }) => {
     containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleShare = async () => {
+    const url = window.location.href;
+    const shareData = { title: project.title, url };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (e) {
+        // User cancelled or share failed — ignore
+      }
+    } else {
+      await navigator.clipboard.writeText(url);
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 2000);
+    }
+  };
+
   // Keyboard event handler
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -64,6 +82,9 @@ const ProjectDetail = ({ project, onClose }) => {
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={project.title}
       className={`fixed inset-0 z-[100] outline-none transition-all duration-700 ease-[cubic-bezier(0.76,0,0.24,1)]
       ${visible ? 'translate-y-0 opacity-100' : 'translate-y-[100vh] opacity-0'}`}
       style={{
@@ -84,11 +105,19 @@ const ProjectDetail = ({ project, onClose }) => {
           <ArrowLeft size={16} /> Back
         </button>
         <button
+          onClick={handleShare}
           className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-white hover:text-crimson transition-colors"
         >
           <Share2 size={16} /> Share
         </button>
       </nav>
+
+      {/* "Link copied" toast */}
+      <div
+        className={`fixed top-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-2 bg-black/80 backdrop-blur-sm text-white text-sm font-mono tracking-wider rounded transition-all duration-300 ${showToast ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}`}
+      >
+        <Check size={14} className="text-crimson" /> Link copied
+      </div>
 
       {/* SCROLLABLE CONTENT CONTAINER */}
       <div
@@ -181,8 +210,8 @@ const ProjectDetail = ({ project, onClose }) => {
             )}
           </div>
 
-          {/* FINAL SECTION: Quote */}
-          <div className="min-h-screen flex items-center justify-center px-8 py-24">
+          {/* FINAL SECTION: Quote — height accounts for footer so quote centers in viewport at bottom */}
+          <div className="min-h-[calc(100vh-15rem)] md:min-h-[calc(100vh-18rem)] flex items-center justify-center px-8 py-24">
             <p className="font-serif italic text-xl md:text-2xl text-stone-500 text-center max-w-lg">
               "The camera is an instrument that teaches people how to see without a camera."
             </p>

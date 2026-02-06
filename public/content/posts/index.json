@@ -2,5 +2,17 @@
     {
         "path": "/content/posts/example-post",
         "slug": "example-post"
+    },
+    {
+        "path": "/content/posts/urban-shadows",
+        "slug": "urban-shadows"
+    },
+    {
+        "path": "/content/posts/northern-lights",
+        "slug": "northern-lights"
+    },
+    {
+        "path": "/content/posts/city-reflections",
+        "slug": "city-reflections"
     }
 ]

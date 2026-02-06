@@ -17,9 +17,9 @@ const ContentGallery = ({ images, onImageClick }) => {
     };
 
     return (
-        <div className={`grid ${getGridClass()} gap-4 max-w-6xl mx-auto px-4`}>
+        <ul className={`grid ${getGridClass()} gap-4 max-w-6xl mx-auto px-4 list-none`}>
             {images.map((src, index) => (
-                <div
+                <li
                     key={index}
                     className="relative overflow-hidden rounded-sm shadow-lg cursor-pointer group aspect-[4/3]"
                 >
@@ -36,9 +36,9 @@ const ContentGallery = ({ images, onImageClick }) => {
                     />
                     {/* Hover overlay */}
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 pointer-events-none" />
-                </div>
+                </li>
             ))}
-        </div>
+        </ul>
     );
 };
 

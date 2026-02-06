@@ -162,32 +162,17 @@ body::after {
 }
 
 /* ============================================
-   UX IMPROVEMENTS - Card 3D Tilt Effect
+   UX IMPROVEMENTS - Card Hover Effect
    ============================================ */
-.card-3d-container {
-  perspective: 1000px;
-  transform-style: preserve-3d;
+.card-hover {
+  transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow 0.3s ease;
 }
 
-.card-3d {
-  transition: transform 0.15s ease-out, box-shadow 0.3s ease;
-  transform-style: preserve-3d;
-}
-
-.card-3d:hover {
-  box-shadow:
-    0 25px 50px -12px rgba(0, 0, 0, 0.5),
+.card-hover:hover {
+  transform: scale(1.03);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5),
     0 0 0 1px rgba(255, 255, 255, 0.05);
-}
-
-/* Card lift effect on hover */
-.card-lift {
-  transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1),
-    box-shadow 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-}
-
-.card-lift:hover {
-  transform: translateY(-8px) translateZ(20px);
 }
 
 /* ============================================
@@ -316,6 +301,34 @@ body::after {
 }
 
 /* ============================================
+   Accessibility
+   ============================================ */
+
+/* Focus ring for keyboard navigation */
+:focus-visible {
+  outline: 2px solid #C41E3A;
+  outline-offset: 2px;
+}
+
+/* Remove outline for mouse/touch clicks */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Screen reader only utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ============================================
    Reduced Motion Preferences
    ============================================ */
 @media (prefers-reduced-motion: reduce) {
@@ -338,9 +351,13 @@ body::after {
     transform: none;
   }
 
-  .card-3d,
-  .card-lift {
+  .card-hover {
     transition: none;
+  }
+
+  /* Remove film grain on reduced motion */
+  body::after {
+    display: none;
   }
 }
 
@@ -503,8 +520,8 @@ body::after {
    ============================================ */
 @media (max-width: 767px) {
 
-  /* Disable 3D tilt transitions on mobile to save CPU */
-  .card-3d {
+  /* Disable hover scale on mobile */
+  .card-hover {
     transition: none !important;
     transform: none !important;
   }
@@ -522,7 +539,7 @@ body::after {
   }
 
   /* Only apply 4/5 aspect ratio to landing page cards, NOT hero images */
-  .card-3d-container .image-container {
+  [data-card] .image-container {
     aspect-ratio: 4/5;
     background-color: #121212;
   }

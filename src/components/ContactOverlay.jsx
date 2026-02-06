@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { X, Mail, Instagram, Twitter, Linkedin, ExternalLink } from 'lucide-react';
 import { siteConfig } from '../config';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 
 const ContactOverlay = ({ onClose }) => {
   const [visible, setVisible] = useState(false);
   const { email, social } = siteConfig;
+  const trapRef = useFocusTrap(visible);
 
   useEffect(() => {
     setTimeout(() => setVisible(true), 50);
@@ -28,12 +30,17 @@ const ContactOverlay = ({ onClose }) => {
 
   return (
     <div
+      ref={trapRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Contact"
       className={`fixed inset-0 z-[100] bg-[#121212] text-white overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.76,0,0.24,1)]
       ${visible ? 'opacity-100' : 'opacity-0'}`}
     >
       {/* Close Button */}
       <button
         onClick={handleClose}
+        aria-label="Close"
         className="fixed top-6 right-6 md:top-8 md:right-8 z-50 p-2 hover:text-crimson transition-colors"
       >
         <X size={24} />

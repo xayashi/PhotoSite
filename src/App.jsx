@@ -1,132 +1,17 @@
-import { useRef, useEffect, useState, useCallback } from 'react';
-import { siteConfig, projects } from './config';
-import { loadPosts, getAllChapters, LANDING_PAGE_POSTS } from './lib/posts';
-import ProjectDetail from './components/ProjectDetail';
-import AboutOverlay from './components/AboutOverlay';
-import ContactOverlay from './components/ContactOverlay';
-import ArchiveOverlay from './components/ArchiveOverlay';
+import { useRef, useEffect, useState, lazy, Suspense } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { siteConfig } from './config';
+import { useProjects } from './hooks/useProjects';
 import CustomCursor from './components/CustomCursor';
+import AnimatedTitle from './components/AnimatedTitle';
+import LazyImage from './components/LazyImage';
+import SwipeHint from './components/SwipeHint';
 
-// Animated Title Component with staggered letter animation
-const AnimatedTitle = ({ text, isVisible, delay = 0 }) => {
-  return (
-    <span className="title-reveal">
-      {text.split('').map((letter, index) => (
-        <span
-          key={index}
-          className={`letter-animate ${letter === ' ' ? 'w-2' : ''}`}
-          style={{
-            animationDelay: isVisible ? `${delay + index * 50}ms` : '0ms',
-            animationPlayState: isVisible ? 'running' : 'paused',
-          }}
-        >
-          {letter}
-        </span>
-      ))}
-    </span>
-  );
-};
-
-// Image with blur-up loading effect
-const LazyImage = ({ src, alt, className, style, onLoad }) => {
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [isInView, setIsInView] = useState(false);
-  const imgRef = useRef(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsInView(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin: '100px' }
-    );
-
-    if (imgRef.current) {
-      observer.observe(imgRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
-
-  const handleLoad = () => {
-    setIsLoaded(true);
-    onLoad?.();
-  };
-
-  return (
-    <div ref={imgRef} className="image-container w-full h-full">
-      {/* Skeleton placeholder */}
-      {!isLoaded && (
-        <div className="absolute inset-0 skeleton" />
-      )}
-
-      {/* Main image */}
-      {isInView && (
-        <img
-          src={src}
-          alt={alt}
-          onLoad={handleLoad}
-          className={`${className} image-main ${isLoaded ? 'loaded' : ''}`}
-          style={style}
-        />
-      )}
-    </div>
-  );
-};
-
-
-
-// Swipe Hint for mobile
-const SwipeHint = ({ onDismiss }) => {
-  const [isDismissed, setIsDismissed] = useState(false);
-  const [hasInteracted, setHasInteracted] = useState(false);
-
-  useEffect(() => {
-    // Check if user has seen the hint before
-    const hasSeen = localStorage.getItem('swipeHintSeen');
-    if (hasSeen) {
-      setIsDismissed(true);
-    }
-
-    const handleInteraction = () => {
-      if (!hasInteracted) {
-        setHasInteracted(true);
-        setTimeout(() => {
-          setIsDismissed(true);
-          localStorage.setItem('swipeHintSeen', 'true');
-          onDismiss?.();
-        }, 300);
-      }
-    };
-
-    window.addEventListener('touchstart', handleInteraction);
-    window.addEventListener('wheel', handleInteraction);
-
-    return () => {
-      window.removeEventListener('touchstart', handleInteraction);
-      window.removeEventListener('wheel', handleInteraction);
-    };
-  }, [hasInteracted, onDismiss]);
-
-  if (isDismissed) return null;
-
-  return (
-    <div className={`fixed bottom-24 left-1/2 -translate-x-1/2 z-50 md:hidden flex items-center gap-3 text-white/60 ${hasInteracted ? 'swipe-hint dismissed' : 'swipe-hint'}`}>
-      <svg
-        className="w-6 h-6"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-      </svg>
-      <span className="text-xs tracking-widest uppercase">Swipe to explore</span>
-    </div>
-  );
-};
+// Lazy-loaded overlays — only fetched when their routes are active
+const ProjectDetail = lazy(() => import('./components/ProjectDetail'));
+const AboutOverlay = lazy(() => import('./components/AboutOverlay'));
+const ContactOverlay = lazy(() => import('./components/ContactOverlay'));
+const ArchiveOverlay = lazy(() => import('./components/ArchiveOverlay'));
 
 export default function App() {
   const scrollContainerRef = useRef(null);
@@ -144,51 +29,32 @@ export default function App() {
     // To center the first card: scroll by (cardWidth / 2) + left margin
     return (cardWidth / 2) + cardMargin;
   };
-  const scrollRef = useRef({ current: getInitialScroll(), target: getInitialScroll(), skew: 0 });
+  const scrollRef = useRef({ current: getInitialScroll(), target: getInitialScroll() });
   const touchRef = useRef({ startX: 0, startY: 0 });
   const cardRefs = useRef({});
   const progressBarRef = useRef(null);
   const currentCardIndexRef = useRef(0);
-  const lastSkewAppliedRef = useRef(0);
+
+  // Routing
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { allProjects, chapters, findBySlug } = useProjects();
+
+  // Derive overlay state from URL
+  const projectSlug = location.pathname.match(/^\/project\/(.+)/)?.[1];
+  const selectedProject = projectSlug ? findBySlug(decodeURIComponent(projectSlug)) : null;
+  const showAbout = location.pathname === '/about';
+  const showContact = location.pathname === '/contact';
+  const showArchive = location.pathname === '/archive';
 
   // Interaction States
   const [focusedId, setFocusedId] = useState(null);
   const [hoveredId, setHoveredId] = useState(null);
-  const [selectedProject, setSelectedProject] = useState(null);
-  const [showAbout, setShowAbout] = useState(false);
-  const [showContact, setShowContact] = useState(false);
-  const [showArchive, setShowArchive] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
-  const [cardTilt, setCardTilt] = useState({});
-
-  // Markdown posts state
-  const [markdownPosts, setMarkdownPosts] = useState([]);
-  const [chapters, setChapters] = useState([]);
-
-  // Combined projects (hardcoded + markdown posts)
-  // Markdown posts appear first (they have dates), followed by legacy projects
-  const allProjects = [
-    ...markdownPosts.map((post, idx) => ({
-      ...post,
-      id: `md-${post.slug || idx}`,
-    })),
-    ...projects.map((p, idx) => ({
-      ...p,
-      id: p.id || `legacy-${idx}`,
-    })),
-  ];
 
   // Check if any overlay is open
-  const isOverlayOpen = selectedProject || showAbout || showContact || showArchive;
-
-  // Load markdown posts on mount
-  useEffect(() => {
-    loadPosts().then(posts => {
-      setMarkdownPosts(posts);
-      setChapters(getAllChapters(posts));
-    });
-  }, []);
+  const isOverlayOpen = location.pathname !== '/';
 
   // Entrance animation
   useEffect(() => {
@@ -205,34 +71,6 @@ export default function App() {
       }
     }
   };
-
-  // Card tilt effect handler
-  const handleCardMouseMove = useCallback((e, cardId) => {
-    const card = cardRefs.current[cardId];
-    if (!card) return;
-
-    const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-
-    const rotateX = (y - centerY) / centerY * -8;
-    const rotateY = (x - centerX) / centerX * 8;
-
-    setCardTilt(prev => ({
-      ...prev,
-      [cardId]: { rotateX, rotateY }
-    }));
-  }, []);
-
-  const handleCardMouseLeave = useCallback((cardId) => {
-    setCardTilt(prev => ({
-      ...prev,
-      [cardId]: { rotateX: 0, rotateY: 0 }
-    }));
-    setHoveredId(null);
-  }, []);
 
   useEffect(() => {
     let animationFrame;
@@ -366,24 +204,22 @@ export default function App() {
       const diff = scroll.target - scroll.current;
       scroll.current += diff * ease;
 
-      const velocity = diff * ease;
-      const skewTarget = velocity * 0.15;
-      scroll.skew += (skewTarget - scroll.skew) * 0.1;
-
       if (scrollContainerRef.current) {
         scrollContainerRef.current.style.transform = `translate3d(-${scroll.current}px, 0, 0)`;
 
-        // Optimization: Skip skew effect on mobile
+        // Parallax depth: cards near viewport center scale up, edge cards scale down
         if (window.innerWidth >= 768) {
-          // Only apply skew if it has changed significantly
-          if (Math.abs(scroll.skew - lastSkewAppliedRef.current) > 0.05) {
-            Object.values(cardRefs.current).forEach(card => {
-              if (card && !card.dataset.focused) {
-                card.style.transform = `skewX(${-scroll.skew}deg)`;
-              }
-            });
-            lastSkewAppliedRef.current = scroll.skew;
-          }
+          const viewportCenter = window.innerWidth / 2;
+          Object.values(cardRefs.current).forEach(card => {
+            if (card && !card.dataset.focused) {
+              const rect = card.getBoundingClientRect();
+              const cardCenter = rect.left + rect.width / 2;
+              const distance = Math.abs(cardCenter - viewportCenter) / viewportCenter;
+              const clampedDistance = Math.min(distance, 1);
+              const scale = 1 - clampedDistance * 0.05;
+              card.style.transform = `scale(${scale})`;
+            }
+          });
         }
       }
 
@@ -416,7 +252,7 @@ export default function App() {
 
   const handleViewClick = (e, project) => {
     e.stopPropagation();
-    setSelectedProject(project);
+    navigate(`/project/${project.slug}`);
     setFocusedId(null);
   };
 
@@ -435,20 +271,19 @@ export default function App() {
       className="h-screen w-screen overflow-hidden text-white font-sans"
       onClick={handleBackgroundClick}
     >
+      <h1 className="sr-only">{siteConfig.siteName} — {siteConfig.tagline}</h1>
 
       {/* Custom Cursor */}
       <CustomCursor />
-
-
 
       {/* Swipe Hint for Mobile */}
       {!isOverlayOpen && <SwipeHint />}
 
       {/* LANDING NAV */}
-      <nav className={`fixed top-0 left-0 w-full p-6 md:p-8 flex justify-between items-center z-40 pointer-events-none transition-all duration-1000 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
+      <nav aria-label="Main navigation" className={`fixed top-0 left-0 w-full p-6 md:p-8 flex justify-between items-center z-40 pointer-events-none transition-all duration-1000 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
         {/* Logo - clickable to open About */}
         <button
-          onClick={() => setShowAbout(true)}
+          onClick={() => navigate('/about')}
           className="pointer-events-auto logo-interactive"
           aria-label="About"
         >
@@ -471,7 +306,7 @@ export default function App() {
       </div>
 
       {/* HORIZONTAL CONTENT */}
-      <div
+      <main
         ref={scrollContainerRef}
         data-scroll-container
         className={`h-full flex items-center pl-[50vw] will-change-transform ${isOverlayOpen ? 'opacity-0 scale-95 pointer-events-none transition-all duration-700' : 'opacity-100 scale-100'}`}
@@ -479,7 +314,6 @@ export default function App() {
         {allProjects.map((item, index) => {
           const isFocused = focusedId === item.id;
           const isHovered = hoveredId === item.id;
-          const tilt = cardTilt[item.id] || { rotateX: 0, rotateY: 0 };
 
           return (
             <div
@@ -487,11 +321,14 @@ export default function App() {
               ref={el => cardRefs.current[item.id] = el}
               data-card
               data-focused={isFocused || undefined}
+              role="button"
+              tabIndex={0}
+              aria-label={`${item.title} — ${item.subtitle}`}
               onClick={() => handleCardClick(item.id)}
-              onMouseMove={(e) => handleCardMouseMove(e, item.id)}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCardClick(item.id); } }}
               onMouseEnter={() => setHoveredId(item.id)}
-              onMouseLeave={() => handleCardMouseLeave(item.id)}
-              className={`card-3d-container relative flex-shrink-0 cursor-pointer will-change-transform
+              onMouseLeave={() => setHoveredId(null)}
+              className={`relative flex-shrink-0 cursor-pointer will-change-transform
                 ${isFocused ? 'z-20 scale-110 transition-transform duration-500' : 'z-0 scale-100 hover:opacity-100 opacity-70 transition-opacity duration-300'}
                 ${isLoaded ? 'opacity-70 translate-y-0' : 'opacity-0 translate-y-12'}
               `}
@@ -504,15 +341,8 @@ export default function App() {
                 transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
               }}
             >
-              {/* Image Container with 3D tilt */}
-              <div
-                className="card-3d w-full h-full overflow-hidden relative shadow-2xl"
-                style={{
-                  transform: isHovered && !isFocused
-                    ? `rotateX(${tilt.rotateX}deg) rotateY(${tilt.rotateY}deg) translateZ(10px)`
-                    : 'rotateX(0) rotateY(0) translateZ(0)',
-                }}
-              >
+              {/* Image Container */}
+              <div className="card-hover w-full h-full overflow-hidden relative shadow-2xl">
                 <LazyImage
                   src={item.cover}
                   alt={item.title}
@@ -569,7 +399,7 @@ export default function App() {
           style={{ transitionDelay: `${300 + allProjects.length * 100 + 200}ms` }}
         >
           <button
-            onClick={() => setShowArchive(true)}
+            onClick={() => navigate('/archive')}
             className="group text-left"
           >
             <span className="text-white/30 text-sm tracking-widest uppercase block mb-2 group-hover:text-crimson transition-colors">
@@ -580,40 +410,39 @@ export default function App() {
             </span>
           </button>
           <button
-            onClick={() => setShowContact(true)}
+            onClick={() => navigate('/contact')}
             className="text-left text-2xl font-serif text-white/40 hover:text-crimson transition-colors"
           >
             Get in Touch →
           </button>
         </div>
-      </div>
+      </main>
 
-      {/* OVERLAYS */}
-      {selectedProject && (
-        <ProjectDetail
-          project={selectedProject}
-          onClose={() => setSelectedProject(null)}
-        />
-      )}
+      {/* OVERLAYS — driven by URL, lazy-loaded */}
+      <Suspense fallback={null}>
+        {selectedProject && (
+          <ProjectDetail
+            project={selectedProject}
+            onClose={() => navigate('/')}
+          />
+        )}
 
-      {showAbout && (
-        <AboutOverlay onClose={() => setShowAbout(false)} />
-      )}
+        {showAbout && (
+          <AboutOverlay onClose={() => navigate('/')} />
+        )}
 
-      {showContact && (
-        <ContactOverlay onClose={() => setShowContact(false)} />
-      )}
+        {showContact && (
+          <ContactOverlay onClose={() => navigate('/')} />
+        )}
 
-      {showArchive && (
-        <ArchiveOverlay
-          chapters={chapters}
-          onClose={() => setShowArchive(false)}
-          onSelectPost={(post) => {
-            setShowArchive(false);
-            setSelectedProject(post);
-          }}
-        />
-      )}
+        {showArchive && (
+          <ArchiveOverlay
+            chapters={chapters}
+            onClose={() => navigate('/')}
+            onSelectPost={(post) => navigate(`/project/${post.slug}`)}
+          />
+        )}
+      </Suspense>
     </div>
   );
 }

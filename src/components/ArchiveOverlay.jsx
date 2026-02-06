@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { X, ChevronRight, ChevronDown } from 'lucide-react';
+import { useFocusTrap } from '../hooks/useFocusTrap';
+import OptimizedImage from './OptimizedImage';
 
 const ArchiveOverlay = ({ chapters = [], onClose, onSelectPost }) => {
   const [visible, setVisible] = useState(false);
   const [expandedChapters, setExpandedChapters] = useState({});
+  const trapRef = useFocusTrap(visible);
 
   useEffect(() => {
     setTimeout(() => setVisible(true), 50);
@@ -32,7 +35,6 @@ const ArchiveOverlay = ({ chapters = [], onClose, onSelectPost }) => {
     setVisible(false);
     setTimeout(() => {
       onSelectPost?.(post);
-      onClose();
     }, 300);
   };
 
@@ -40,12 +42,17 @@ const ArchiveOverlay = ({ chapters = [], onClose, onSelectPost }) => {
 
   return (
     <div
+      ref={trapRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Archive"
       className={`fixed inset-0 z-[100] bg-[#121212] text-white overflow-y-auto scrollbar-hidden transition-all duration-500 ease-[cubic-bezier(0.76,0,0.24,1)]
       ${visible ? 'opacity-100' : 'opacity-0'}`}
     >
       {/* Close Button */}
       <button
         onClick={handleClose}
+        aria-label="Close"
         className="fixed top-6 right-6 md:top-8 md:right-8 z-50 p-2 hover:text-crimson transition-colors"
       >
         <X size={24} />
@@ -73,6 +80,8 @@ const ArchiveOverlay = ({ chapters = [], onClose, onSelectPost }) => {
                   {/* Chapter Header */}
                   <button
                     onClick={() => toggleChapter(chapterIndex)}
+                    aria-expanded={!!expandedChapters[chapterIndex]}
+                    aria-controls={`chapter-${chapterIndex}`}
                     className="w-full flex items-center justify-between p-4 border-b border-white/10 hover:border-crimson/50 transition-colors group"
                   >
                     <h3 className="text-2xl font-serif text-white/80 group-hover:text-white transition-colors">
@@ -92,30 +101,34 @@ const ArchiveOverlay = ({ chapters = [], onClose, onSelectPost }) => {
 
                   {/* Chapter Posts */}
                   {expandedChapters[chapterIndex] && (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
+                    <ul id={`chapter-${chapterIndex}`} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4 list-none">
                       {chapter.posts.map((post, postIndex) => (
-                        <button
-                          key={postIndex}
-                          onClick={() => handlePostClick(post)}
-                          className="group relative aspect-[3/4] overflow-hidden rounded-sm bg-stone-900"
-                        >
-                          <img
-                            src={post.cover}
-                            alt={post.title}
-                            className="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                          <div className="absolute bottom-0 left-0 right-0 p-3">
-                            <p className="text-xs text-crimson font-mono tracking-wider mb-1">
-                              {post.subtitle}
-                            </p>
-                            <h4 className="text-sm font-serif text-white truncate">
-                              {post.title}
-                            </h4>
-                          </div>
-                        </button>
+                        <li key={postIndex}>
+                          <button
+                            onClick={() => handlePostClick(post)}
+                            aria-label={`${post.title} — ${post.subtitle}`}
+                            className="group relative aspect-[3/4] overflow-hidden rounded-sm bg-stone-900 w-full"
+                          >
+                            <OptimizedImage
+                              src={post.cover}
+                              alt={post.title}
+                              className="w-full h-full"
+                              imgClassName="opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
+                              sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                            <div className="absolute bottom-0 left-0 right-0 p-3">
+                              <p className="text-xs text-crimson font-mono tracking-wider mb-1">
+                                {post.subtitle}
+                              </p>
+                              <h4 className="text-sm font-serif text-white truncate">
+                                {post.title}
+                              </h4>
+                            </div>
+                          </button>
+                        </li>
                       ))}
-                    </div>
+                    </ul>
                   )}
                 </div>
               ))}
