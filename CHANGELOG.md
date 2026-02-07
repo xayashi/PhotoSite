@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.1] - 2026-02-07
+
+### Fixed
+- Mobile card tap image vanish: CSS selector `[data-card] .card-hover > div` was applying `background-color: #121212` to the VIEW overlay, overriding its semi-transparent `bg-black/40` and making it fully opaque. Changed to `> div:first-child` to target only the OptimizedImage wrapper.
+- `<picture>` element in OptimizedImage now uses `display: block` with full width/height, fixing the `height: 100%` resolution chain so images properly fill portrait containers.
+
 ## [2.0.0] - 2026-02-06
 
 ### Added

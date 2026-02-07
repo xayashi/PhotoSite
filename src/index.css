@@ -549,9 +549,11 @@ body::after {
     transition: filter 0.3s ease, transform 0.3s ease !important;
   }
 
-  /* Only apply 4/5 aspect ratio to landing page cards, NOT hero images */
+  /* Only apply 4/5 aspect ratio to landing page cards, NOT hero images.
+     Use :first-child to target only the OptimizedImage wrapper,
+     NOT the VIEW overlay (which needs its semi-transparent bg-black/40). */
   [data-card] .image-container,
-  [data-card] .card-hover > div {
+  [data-card] .card-hover > div:first-child {
     aspect-ratio: 4/5;
     background-color: #121212;
   }

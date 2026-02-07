@@ -103,7 +103,7 @@ const OptimizedImage = ({
             )}
 
             {/* Use picture element for format negotiation */}
-            <picture>
+            <picture className="block w-full h-full">
                 {/* WebP sources for modern browsers */}
                 {webpSrcSet && (
                     <source
