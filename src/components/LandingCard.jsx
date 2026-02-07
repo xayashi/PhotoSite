@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import AnimatedTitle from './AnimatedTitle';
-import LazyImage from './LazyImage';
+import OptimizedImage from './OptimizedImage';
 
 const LandingCard = memo(({
   item,
@@ -50,29 +50,28 @@ const LandingCard = memo(({
     >
       {/* Image Container */}
       <div className="card-hover w-full h-full overflow-hidden relative shadow-2xl">
-        <LazyImage
+        <OptimizedImage
           src={item.cover}
           alt={item.title}
-          className={`w-full h-full object-cover color-reveal
+          className="w-full h-full"
+          imgClassName={`color-reveal
               ${isFocused ? 'scale-100 revealed' : 'scale-110'}
               ${isHovered ? 'revealed' : ''}
-            `}
-          style={{
-            objectFit: 'cover',
-            objectPosition: 'center'
-          }}
+          `}
+          sizes="(max-width: 768px) 90vw, 40vw"
+          widths={[640, 750, 828, 1080, 1200]}
         />
 
         {/* The "View" Prompt - Only visible when focused */}
         <div
-          className={`absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center transition-opacity duration-500
+          className={`absolute inset-0 bg-black/40 md:backdrop-blur-[2px] flex items-center justify-center transition-opacity duration-500
           ${isFocused ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         >
           <button
             onClick={(e) => onViewClick(e, item)}
             className="group flex flex-col items-center gap-2"
           >
-            <div className="w-20 h-20 rounded-full border border-white/30 flex items-center justify-center bg-white/10 backdrop-blur-md group-hover:bg-white group-hover:text-black transition-all duration-300">
+            <div className="w-20 h-20 rounded-full border border-white/30 flex items-center justify-center bg-white/10 md:backdrop-blur-md group-hover:bg-white group-hover:text-black transition-all duration-300">
               <span className="text-xs font-bold tracking-widest">VIEW</span>
             </div>
           </button>

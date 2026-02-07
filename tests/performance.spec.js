@@ -6,8 +6,8 @@ test.describe('Performance and Visual Verification', () => {
         // Navigate to the local dev server
         await page.goto('/');
 
-        // Wait for initial images to load
-        await page.waitForSelector('.image-main.loaded');
+        // Wait for initial images to load (OptimizedImage uses <picture> with opacity transition)
+        await page.waitForSelector('[data-card] picture img');
 
         // Performance measurement: Check for long tasks during scroll
         const longTasks = await page.evaluate(async () => {

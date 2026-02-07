@@ -560,7 +560,8 @@ body::after {
   }
 
   /* Only apply 4/5 aspect ratio to landing page cards, NOT hero images */
-  [data-card] .image-container {
+  [data-card] .image-container,
+  [data-card] .card-hover > div {
     aspect-ratio: 4/5;
     background-color: #121212;
   }

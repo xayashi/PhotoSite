@@ -101,6 +101,7 @@ async function optimizeImage(config) {
       // Generate WebP
       const webpPath = path.join(outputDir, `${config.name}-${width}w.webp`);
       await sharp(inputPath)
+        .rotate()
         .resize(width, null, {
           withoutEnlargement: true,
           fit: 'inside',
@@ -114,6 +115,7 @@ async function optimizeImage(config) {
       // Generate JPG (or convert from PNG)
       const jpgPath = path.join(outputDir, `${config.name}-${width}w.jpg`);
       await sharp(inputPath)
+        .rotate()
         .resize(width, null, {
           withoutEnlargement: true,
           fit: 'inside',
@@ -214,11 +216,13 @@ async function main() {
         if (width > metadata.width) continue;
         try {
           await sharp(inputPath)
+            .rotate()
             .resize(width, null, { withoutEnlargement: true, fit: 'inside' })
             .webp({ quality: config.quality.webp })
             .toFile(path.join(outputDir, `${config.name}-${width}w.webp`));
 
           await sharp(inputPath)
+            .rotate()
             .resize(width, null, { withoutEnlargement: true, fit: 'inside' })
             .jpeg({ quality: config.quality.jpg, mozjpeg: true })
             .toFile(path.join(outputDir, `${config.name}-${width}w.jpg`));
