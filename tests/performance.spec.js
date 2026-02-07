@@ -66,4 +66,81 @@ test.describe('Performance and Visual Verification', () => {
         const cursors = await page.locator('[data-cursor-container]').count();
         expect(cursors).toBe(1);
     });
+
+    // ============================================
+    // Mobile Performance Regression Tests
+    // ============================================
+
+    test('film grain is hidden on mobile viewport', async ({ page }) => {
+        await page.setViewportSize({ width: 375, height: 812 });
+        await page.goto('/');
+
+        const filmGrainDisplay = await page.evaluate(() => {
+            const bodyAfter = window.getComputedStyle(document.body, '::after');
+            return bodyAfter.display;
+        });
+
+        expect(filmGrainDisplay).toBe('none');
+    });
+
+    test('archive only expands first chapter by default', async ({ page }) => {
+        await page.goto('/archive');
+        await page.waitForTimeout(500);
+
+        // First chapter should be expanded
+        const firstChapterButton = page.locator('button[aria-expanded]').first();
+        await expect(firstChapterButton).toHaveAttribute('aria-expanded', 'true');
+
+        // If there are more chapters, they should be collapsed
+        const chapterButtons = page.locator('button[aria-expanded]');
+        const count = await chapterButtons.count();
+        if (count > 1) {
+            const secondChapterButton = chapterButtons.nth(1);
+            await expect(secondChapterButton).toHaveAttribute('aria-expanded', 'false');
+        }
+    });
+
+    test('ProjectDetail does not use background-attachment: fixed', async ({ page }) => {
+        await page.goto('/');
+        await page.waitForTimeout(300);
+
+        // Click the first card to open it
+        const firstCard = page.locator('[data-card]').first();
+        await firstCard.click();
+        await page.waitForTimeout(200);
+
+        // Click the VIEW button
+        const viewButton = page.locator('text=VIEW').first();
+        await viewButton.click();
+        await page.waitForTimeout(800);
+
+        // Check the project detail dialog
+        const dialog = page.locator('[role="dialog"]');
+        const bgAttachment = await dialog.evaluate(el => {
+            return window.getComputedStyle(el).backgroundAttachment;
+        });
+
+        expect(bgAttachment).not.toBe('fixed');
+    });
+
+    test('overlay transition completes within 600ms on mobile', async ({ page }) => {
+        await page.setViewportSize({ width: 375, height: 812 });
+        await page.goto('/');
+        await page.waitForTimeout(500);
+
+        // Click first card then VIEW
+        const firstCard = page.locator('[data-card]').first();
+        await firstCard.click();
+        await page.waitForTimeout(200);
+        const viewButton = page.locator('text=VIEW').first();
+        await viewButton.click();
+
+        const start = Date.now();
+
+        // Wait for the overlay to be fully visible (opacity: 1, translateY: 0)
+        await page.waitForSelector('[role="dialog"].translate-y-0', { timeout: 2000 });
+
+        const elapsed = Date.now() - start;
+        expect(elapsed).toBeLessThan(600);
+    });
 });

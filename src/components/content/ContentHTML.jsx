@@ -13,11 +13,21 @@ const ContentHTML = ({ content, onImageClick }) => {
 
         // Find all images and add click handlers
         const images = containerRef.current.querySelectorAll('img');
+        const handlers = [];
         images.forEach((img, index) => {
             img.style.cursor = 'pointer';
             img.setAttribute('data-cursor', 'click');
-            img.onclick = () => onImageClick?.(img.src, index);
+            const handler = () => onImageClick?.(img.src, index);
+            img.onclick = handler;
+            handlers.push({ img, handler });
         });
+
+        // Cleanup: remove onclick handlers when content changes
+        return () => {
+            handlers.forEach(({ img }) => {
+                img.onclick = null;
+            });
+        };
     }, [content, onImageClick]);
 
     return (

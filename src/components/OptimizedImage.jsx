@@ -1,5 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Maximize2 } from 'lucide-react';
+
+// Module-level constants — stable references, computed once
+const IS_VERCEL = typeof window !== 'undefined' &&
+    !window.location.hostname.includes('localhost') &&
+    !window.location.hostname.includes('127.0.0.1');
+
+const DEFAULT_WIDTHS = [640, 750, 828, 1080, 1200, 1920, 2400];
 
 /**
  * OptimizedImage component with responsive image support
@@ -20,64 +27,24 @@ const OptimizedImage = ({
     fullSrc,
     style = {},
     sizes = '100vw', // Responsive sizing hint
-    widths = [640, 750, 828, 1080, 1200, 1920, 2400], // Available widths
+    widths = DEFAULT_WIDTHS, // Available widths
 }) => {
     const [isLoaded, setIsLoaded] = useState(false);
     const [hasError, setHasError] = useState(false);
 
-    // Check if we're on Vercel (production)
-    const isVercel = typeof window !== 'undefined' &&
-        !window.location.hostname.includes('localhost') &&
-        !window.location.hostname.includes('127.0.0.1');
-
     // Extract image name and path for optimized images
-    const getImageInfo = () => {
+    const imageInfo = useMemo(() => {
         if (!src) return null;
-
-        // Extract filename without extension
-        // e.g., /images/landscape.jpg -> landscape
         const match = src.match(/\/([^/]+)\.(jpg|jpeg|png)$/i);
         if (!match) return null;
-
         const [, name, ext] = match;
-        const isInImagesDir = src.includes('/images/');
+        return { name, ext };
+    }, [src]);
 
-        return { name, ext, isInImagesDir };
-    };
-
-    // Generate srcset for responsive images
-    const generateSrcSet = (format = 'jpg') => {
+    // Memoize srcSet and optimizedSrc to avoid recalculating on every render
+    const optimizedSrc = useMemo(() => {
         if (!src) return '';
-
-        const imageInfo = getImageInfo();
-
-        // For Vercel, use their API
-        if (isVercel) {
-            return widths
-                .map(w => `/_vercel/image?url=${encodeURIComponent(src)}&w=${w}&q=${quality} ${w}w`)
-                .join(', ');
-        }
-
-        // For local, use pre-generated responsive images
-        if (imageInfo && !hasError) {
-            const basePath = `/images/optimized/${imageInfo.name}`;
-            return widths
-                .map(w => `${basePath}/${imageInfo.name}-${w}w.${format} ${w}w`)
-                .join(', ');
-        }
-
-        // Fallback to original
-        return '';
-    };
-
-    // Build optimized URL for fallback src
-    const getOptimizedSrc = () => {
-        if (!src) return '';
-
-        const imageInfo = getImageInfo();
-
-        // For Vercel, use their API
-        if (isVercel && !hasError) {
+        if (IS_VERCEL && !hasError) {
             const params = new URLSearchParams({
                 url: src,
                 w: width.toString(),
@@ -85,20 +52,43 @@ const OptimizedImage = ({
             });
             return `/_vercel/image?${params.toString()}`;
         }
-
-        // For local with optimized images available
         if (imageInfo && !hasError) {
-            // Use a mid-range size as fallback (1080w is good default)
             return `/images/optimized/${imageInfo.name}/${imageInfo.name}-1080w.jpg`;
         }
-
-        // Fallback to original
         return src;
-    };
+    }, [src, width, quality, imageInfo, hasError]);
 
-    const optimizedSrc = getOptimizedSrc();
-    const webpSrcSet = generateSrcSet('webp');
-    const jpgSrcSet = generateSrcSet('jpg');
+    const webpSrcSet = useMemo(() => {
+        if (!src) return '';
+        if (IS_VERCEL) {
+            return widths
+                .map(w => `/_vercel/image?url=${encodeURIComponent(src)}&w=${w}&q=${quality} ${w}w`)
+                .join(', ');
+        }
+        if (imageInfo && !hasError) {
+            const basePath = `/images/optimized/${imageInfo.name}`;
+            return widths
+                .map(w => `${basePath}/${imageInfo.name}-${w}w.webp ${w}w`)
+                .join(', ');
+        }
+        return '';
+    }, [src, widths, quality, imageInfo, hasError]);
+
+    const jpgSrcSet = useMemo(() => {
+        if (!src) return '';
+        if (IS_VERCEL) {
+            return widths
+                .map(w => `/_vercel/image?url=${encodeURIComponent(src)}&w=${w}&q=${quality} ${w}w`)
+                .join(', ');
+        }
+        if (imageInfo && !hasError) {
+            const basePath = `/images/optimized/${imageInfo.name}`;
+            return widths
+                .map(w => `${basePath}/${imageInfo.name}-${w}w.jpg ${w}w`)
+                .join(', ');
+        }
+        return '';
+    }, [src, widths, quality, imageInfo, hasError]);
 
     return (
         <div

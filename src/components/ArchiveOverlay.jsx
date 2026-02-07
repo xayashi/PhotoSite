@@ -13,11 +13,11 @@ const ArchiveOverlay = ({ chapters = [], onClose, onSelectPost }) => {
   useEffect(() => {
     setTimeout(() => setVisible(true), 50);
 
-    // Expand all chapters by default
+    // Only expand the first chapter by default (progressive disclosure)
     const expanded = {};
-    chapters.forEach((chapter, index) => {
-      expanded[index] = true;
-    });
+    if (chapters.length > 0) {
+      expanded[0] = true;
+    }
     setExpandedChapters(expanded);
   }, [chapters]);
 

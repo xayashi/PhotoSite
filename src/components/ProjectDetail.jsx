@@ -44,7 +44,8 @@ const ProjectDetail = ({ project, onClose }) => {
 
   const handleClose = () => {
     setVisible(false);
-    setTimeout(onClose, 600);
+    const isMobile = window.innerWidth < 768;
+    setTimeout(onClose, isMobile ? 400 : 600);
   };
 
   const scrollToTop = () => {
@@ -88,15 +89,10 @@ const ProjectDetail = ({ project, onClose }) => {
       role="dialog"
       aria-modal="true"
       aria-label={project.title}
-      className={`fixed inset-0 z-[100] outline-none transition-all duration-700 ease-[cubic-bezier(0.76,0,0.24,1)]
+      className={`fixed inset-0 z-[100] outline-none transition-[transform,opacity] duration-500 md:duration-700 ease-[cubic-bezier(0.76,0,0.24,1)] project-detail-bg
       ${visible ? 'translate-y-0 opacity-100' : 'translate-y-[100vh] opacity-0'}`}
       style={{
         backgroundColor: '#f5f3ed',
-        backgroundImage: `url('/ProjectBackground.png')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        backgroundAttachment: 'fixed',
       }}
     >
       {/* Navigation - Absolute relative to the fixed wrapper */}
@@ -117,7 +113,7 @@ const ProjectDetail = ({ project, onClose }) => {
 
       {/* "Link copied" toast */}
       <div
-        className={`fixed top-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-2 bg-black/80 backdrop-blur-sm text-white text-sm font-mono tracking-wider rounded transition-all duration-300 ${showToast ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}`}
+        className={`fixed top-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-2 bg-black/80 md:backdrop-blur-sm text-white text-sm font-mono tracking-wider rounded transition-all duration-300 ${showToast ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'}`}
       >
         <Check size={14} className="text-crimson" /> Link copied
       </div>

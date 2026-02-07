@@ -516,9 +516,30 @@ body::after {
 }
 
 /* ============================================
+   Project Detail Background (pseudo-element replaces
+   backgroundAttachment:fixed which kills mobile perf)
+   ============================================ */
+.project-detail-bg::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url('/ProjectBackground.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ============================================
    MOBILE PERFORMANCE OPTIMIZATIONS
    ============================================ */
 @media (max-width: 767px) {
+
+  /* Disable film grain SVG filter on mobile — invisible on small high-DPI screens */
+  body::after {
+    display: none;
+  }
 
   /* Disable hover scale on mobile */
   .card-hover {
@@ -542,5 +563,17 @@ body::after {
   [data-card] .image-container {
     aspect-ratio: 4/5;
     background-color: #121212;
+  }
+
+  /* Simplify image placeholders — no blur filter compositing on mobile */
+  .image-blur-placeholder {
+    filter: none;
+    background: #1a1a1a;
+  }
+
+  /* Static skeleton instead of infinite shimmer animation */
+  .skeleton {
+    animation: none;
+    background: rgba(255, 255, 255, 0.05);
   }
 }

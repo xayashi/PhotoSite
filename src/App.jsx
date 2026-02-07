@@ -1,10 +1,9 @@
-import { useRef, useEffect, useState, lazy, Suspense } from 'react';
+import { useRef, useEffect, useState, useCallback, useMemo, lazy, Suspense } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { siteConfig } from './config';
 import { useProjects } from './hooks/useProjects';
 import CustomCursor from './components/CustomCursor';
-import AnimatedTitle from './components/AnimatedTitle';
-import LazyImage from './components/LazyImage';
+import LandingCard from './components/LandingCard';
 import SwipeHint from './components/SwipeHint';
 
 // Lazy-loaded overlays — only fetched when their routes are active
@@ -55,6 +54,12 @@ export default function App() {
 
   // Check if any overlay is open
   const isOverlayOpen = location.pathname !== '/';
+  const isOverlayOpenRef = useRef(isOverlayOpen);
+
+  // Sync overlay ref so the RAF loop can check without re-registering listeners
+  useEffect(() => {
+    isOverlayOpenRef.current = isOverlayOpen;
+  }, [isOverlayOpen]);
 
   // Entrance animation
   useEffect(() => {
@@ -134,7 +139,7 @@ export default function App() {
     };
 
     const handleWheel = (e) => {
-      if (isOverlayOpen) return;
+      if (isOverlayOpenRef.current) return;
       e.preventDefault();
 
       let delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
@@ -152,7 +157,7 @@ export default function App() {
 
     // Keyboard navigation
     const handleKeyDown = (e) => {
-      if (isOverlayOpen) return;
+      if (isOverlayOpenRef.current) return;
 
       const cardWidth = getCardWidth();
       const cardMargin = getCardMargin();
@@ -173,13 +178,13 @@ export default function App() {
 
     // Touch support
     const handleTouchStart = (e) => {
-      if (isOverlayOpen) return;
+      if (isOverlayOpenRef.current) return;
       touch.startX = e.touches[0].clientX;
       touch.startY = e.touches[0].clientY;
     };
 
     const handleTouchMove = (e) => {
-      if (isOverlayOpen) return;
+      if (isOverlayOpenRef.current) return;
 
       const deltaX = touch.startX - e.touches[0].clientX;
       const deltaY = touch.startY - e.touches[0].clientY;
@@ -195,9 +200,10 @@ export default function App() {
     };
 
     const animate = () => {
-      // Optimization: Pause animation when overlays are open to save CPU/battery
-      if (isOverlayOpen) {
-        return; // Don't request next animation frame
+      // Skip work when overlays are open but keep the loop warm (no listener teardown)
+      if (isOverlayOpenRef.current) {
+        animationFrame = requestAnimationFrame(animate);
+        return;
       }
 
       const ease = 0.08;
@@ -207,13 +213,21 @@ export default function App() {
       if (scrollContainerRef.current) {
         scrollContainerRef.current.style.transform = `translate3d(-${scroll.current}px, 0, 0)`;
 
-        // Parallax depth: cards near viewport center scale up, edge cards scale down
-        if (window.innerWidth >= 768) {
+        // Parallax depth: desktop only (>=1024 excludes tablets), math-based position
+        if (window.innerWidth >= 1024) {
           const viewportCenter = window.innerWidth / 2;
-          Object.values(cardRefs.current).forEach(card => {
+          const startPadding = window.innerWidth * 0.5;
+          const cardWidth = getCardWidth();
+          const cardMargin = getCardMargin();
+          const cardStep = cardWidth + (cardMargin * 2);
+
+          Object.entries(cardRefs.current).forEach(([, card]) => {
             if (card && !card.dataset.focused) {
-              const rect = card.getBoundingClientRect();
-              const cardCenter = rect.left + rect.width / 2;
+              const index = parseInt(card.dataset.index, 10);
+              if (isNaN(index)) return;
+              // Calculate card center position from scroll offset + known geometry
+              const cardLeft = startPadding + (index * cardStep) + cardMargin - scroll.current;
+              const cardCenter = cardLeft + cardWidth / 2;
               const distance = Math.abs(cardCenter - viewportCenter) / viewportCenter;
               const clampedDistance = Math.min(distance, 1);
               const scale = 1 - clampedDistance * 0.05;
@@ -240,31 +254,35 @@ export default function App() {
       window.removeEventListener('touchmove', handleTouchMove);
       cancelAnimationFrame(animationFrame);
     };
-  }, [isOverlayOpen, allProjects.length]);
+  }, [allProjects.length]);
 
-  const handleCardClick = (id) => {
-    if (focusedId === id) {
-      setFocusedId(null);
-    } else {
-      setFocusedId(id);
-    }
-  };
+  const handleCardClick = useCallback((id) => {
+    setFocusedId(prev => prev === id ? null : id);
+  }, []);
 
-  const handleViewClick = (e, project) => {
+  const handleViewClick = useCallback((e, project) => {
     e.stopPropagation();
     navigate(`/project/${project.slug}`);
     setFocusedId(null);
-  };
+  }, [navigate]);
 
-  // Responsive card sizing
-  const getCardStyle = () => {
+  const handleCardMouseEnter = useCallback((id) => {
+    setHoveredId(id);
+  }, []);
+
+  const handleCardMouseLeave = useCallback(() => {
+    setHoveredId(null);
+  }, []);
+
+  // Responsive card sizing — computed once
+  const cardStyle = useMemo(() => {
     const isMobile = window.innerWidth < 768;
     return {
       width: isMobile ? 'clamp(280px, 85vw, 360px)' : 'clamp(280px, 40vh, 400px)',
       height: isMobile ? 'auto' : 'clamp(400px, 60vh, 600px)',
       aspectRatio: isMobile ? '4/5' : 'unset',
     };
-  };
+  }, []);
 
   return (
     <div
@@ -311,86 +329,22 @@ export default function App() {
         data-scroll-container
         className={`h-full flex items-center pl-[50vw] will-change-transform ${isOverlayOpen ? 'opacity-0 scale-95 pointer-events-none transition-all duration-700' : 'opacity-100 scale-100'}`}
       >
-        {allProjects.map((item, index) => {
-          const isFocused = focusedId === item.id;
-          const isHovered = hoveredId === item.id;
-
-          return (
-            <div
-              key={item.id}
-              ref={el => cardRefs.current[item.id] = el}
-              data-card
-              data-focused={isFocused || undefined}
-              role="button"
-              tabIndex={0}
-              aria-label={`${item.title} — ${item.subtitle}`}
-              onClick={() => handleCardClick(item.id)}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCardClick(item.id); } }}
-              onMouseEnter={() => setHoveredId(item.id)}
-              onMouseLeave={() => setHoveredId(null)}
-              className={`relative flex-shrink-0 cursor-pointer will-change-transform
-                ${isFocused ? 'z-20 scale-110 transition-transform duration-500' : 'z-0 scale-100 hover:opacity-100 opacity-70 transition-opacity duration-300'}
-                ${isLoaded ? 'opacity-70 translate-y-0' : 'opacity-0 translate-y-12'}
-              `}
-              style={{
-                ...getCardStyle(),
-                margin: window.innerWidth < 768 ? '0 12px' : '0 clamp(16px, 5vw, 48px)',
-                transitionDelay: isLoaded ? '0ms' : `${300 + index * 100}ms`,
-                transitionProperty: 'opacity, transform',
-                transitionDuration: '800ms',
-                transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
-              }}
-            >
-              {/* Image Container */}
-              <div className="card-hover w-full h-full overflow-hidden relative shadow-2xl">
-                <LazyImage
-                  src={item.cover}
-                  alt={item.title}
-                  className={`w-full h-full object-cover color-reveal
-                      ${isFocused ? 'scale-100 revealed' : 'scale-110'}
-                      ${isHovered ? 'revealed' : ''}
-                    `}
-                  style={{
-                    objectFit: 'cover',
-                    objectPosition: 'center'
-                  }}
-                />
-
-                {/* The "View" Prompt - Only visible when focused */}
-                <div
-                  className={`absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center transition-opacity duration-500
-                  ${isFocused ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-                >
-                  <button
-                    onClick={(e) => handleViewClick(e, item)}
-                    className="group flex flex-col items-center gap-2"
-                  >
-                    <div className="w-20 h-20 rounded-full border border-white/30 flex items-center justify-center bg-white/10 backdrop-blur-md group-hover:bg-white group-hover:text-black transition-all duration-300">
-                      <span className="text-xs font-bold tracking-widest">VIEW</span>
-                    </div>
-                  </button>
-                </div>
-              </div>
-
-              {/* Typography with animated title */}
-              <div className={`absolute -bottom-16 left-0 transition-all duration-500 ${isFocused ? 'translate-y-4 opacity-100' : 'opacity-60'}`}>
-                <p className="text-xs text-white/60 mb-1 font-mono">{item.subtitle}</p>
-                <h2 className="text-3xl sm:text-4xl md:text-7xl font-serif text-transparent stroke-text">
-                  <AnimatedTitle
-                    text={item.title}
-                    isVisible={isLoaded}
-                    delay={500 + index * 150}
-                  />
-                </h2>
-              </div>
-
-              {/* Background Number */}
-              <div className="absolute -top-32 -left-10 text-[10rem] font-bold text-white/5 z-10 select-none font-serif pointer-events-none">
-                {String(index + 1).padStart(2, '0')}
-              </div>
-            </div>
-          );
-        })}
+        {allProjects.map((item, index) => (
+          <LandingCard
+            key={item.id}
+            item={item}
+            index={index}
+            isFocused={focusedId === item.id}
+            isHovered={hoveredId === item.id}
+            isLoaded={isLoaded}
+            cardStyle={cardStyle}
+            onCardClick={handleCardClick}
+            onViewClick={handleViewClick}
+            onMouseEnter={handleCardMouseEnter}
+            onMouseLeave={handleCardMouseLeave}
+            cardRef={el => cardRefs.current[item.id] = el}
+          />
+        ))}
 
         {/* End Section - See Additional Seasons */}
         <div
