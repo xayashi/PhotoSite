@@ -10,6 +10,9 @@ export const siteConfig = {
   // Tagline shown in various places
   tagline: "Visual Storytelling",
 
+  // Canonical site URL (used for OG tags, share links)
+  siteUrl: "https://photosite.vercel.app",
+
   // Contact email
   email: "hello@example.com",
 

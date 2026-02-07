@@ -2,12 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { X, MapPin, Calendar } from 'lucide-react';
 import { siteConfig } from '../config';
 import { useFocusTrap } from '../hooks/useFocusTrap';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import OptimizedImage from './OptimizedImage';
 
 const AboutOverlay = ({ onClose }) => {
   const [visible, setVisible] = useState(false);
   const { about } = siteConfig;
   const trapRef = useFocusTrap(visible);
+  useDocumentTitle('About — 林');
 
   useEffect(() => {
     setTimeout(() => setVisible(true), 50);

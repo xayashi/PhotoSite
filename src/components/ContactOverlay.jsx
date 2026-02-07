@@ -2,11 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { X, Mail, Instagram, Twitter, Linkedin, ExternalLink } from 'lucide-react';
 import { siteConfig } from '../config';
 import { useFocusTrap } from '../hooks/useFocusTrap';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 const ContactOverlay = ({ onClose }) => {
   const [visible, setVisible] = useState(false);
   const { email, social } = siteConfig;
   const trapRef = useFocusTrap(visible);
+  useDocumentTitle('Contact — 林');
 
   useEffect(() => {
     setTimeout(() => setVisible(true), 50);

@@ -38,20 +38,19 @@ A roadmap for enhancing the PhotoSite landing page with modern, smooth, and enjo
 
 ---
 
-### 3. Card Hover Lift/Tilt Effect
-**Status:** ✅ Implemented
+### 3. Card Hover Effect
+**Status:** ✅ Implemented (Revised)
 
-**Description:** 3D tilt effect on card hover for a premium, tactile feel.
+**Description:** Originally a 3D tilt effect, later replaced with subtle scale + color reveal. The 3D tilt was found to be distracting.
 
-**Implementation:**
-- Mouse position tracking relative to card
-- `rotateX` and `rotateY` transforms based on cursor position
-- `translateZ` for lift effect with perspective container
-- Smooth transition on mouse leave
+**Current implementation:**
+- `scale(1.03)` on hover with smooth cubic-bezier transition
+- Grayscale-to-color reveal on hover (`.color-reveal`)
+- No 3D rotation or perspective transforms
 
 **Files modified:**
-- `src/App.jsx` - Added tilt state and mouse handlers
-- `src/index.css` - Added `.card-3d` and `.card-3d-container` styles
+- `src/App.jsx` - Scale on hover, color-reveal class
+- `src/index.css` - `.card-hover` scale transition, `.color-reveal` styles
 
 ---
 
@@ -92,9 +91,17 @@ A roadmap for enhancing the PhotoSite landing page with modern, smooth, and enjo
 ---
 
 ### 6. Parallax Depth Effect
-**Status:** 🔲 Not Started (Skipped for performance)
+**Status:** ✅ Implemented
 
-**Note:** Decided to skip for now to maintain 60fps performance. Can be added later if needed.
+**Description:** Cards scale based on distance from viewport center for a depth-of-field feel.
+
+**Implementation:**
+- Cards near viewport center scale to 1.0, edge cards scale to 0.95
+- Runs inside the existing `requestAnimationFrame` loop (no extra cost)
+- Desktop only (disabled on mobile)
+
+**Files modified:**
+- `src/App.jsx` - Parallax depth calculation in animation loop
 
 ---
 
@@ -165,33 +172,38 @@ A roadmap for enhancing the PhotoSite landing page with modern, smooth, and enjo
 |---------|--------|--------|
 | Color reveal on hover | ✅ Done | High |
 | Progress indicator | ✅ Done | High |
-| Card 3D tilt effect | ✅ Done | High |
+| Card hover (scale + color) | ✅ Done (revised) | High |
 | Image blur-up loading | ✅ Done | High |
 | Typography animations | ✅ Done | Medium |
 | Magnetic cursor | ✅ Done | Medium |
 | Swipe hint (mobile) | ✅ Done | Medium |
 | Lazy loading images | ✅ Done | High |
-| Parallax effect | ⏭️ Skipped | Low |
+| Parallax depth effect | ✅ Done | Medium |
 | Snap scrolling | ⏭️ Skipped | Low |
 
 ---
 
-## 🧪 Testing Checklist
+## Testing
 
-- [ ] Desktop Chrome
+37 Playwright integration tests covering navigation, accessibility, functionality, and performance. Run with `npx playwright test`.
+
+- [x] Desktop Chrome (Playwright)
 - [ ] Desktop Firefox
 - [ ] Desktop Safari
 - [ ] Mobile iOS Safari
 - [ ] Mobile Android Chrome
 - [ ] Tablet landscape/portrait
 - [x] Reduced motion preference respected
-- [ ] Performance profiling (60fps maintained)
+- [x] Performance profiling (no long tasks during scroll)
 
 ---
 
-## 🚀 Accessibility Features
+## Accessibility Features
 
 - ✅ Reduced motion media query support
-- ✅ Keyboard navigation preserved
-- ✅ Proper aria-labels on buttons
-- ✅ Focus states maintained
+- ✅ Keyboard navigation (arrow keys, Enter/Space, Escape)
+- ✅ ARIA attributes on all overlays, dialogs, and interactive elements
+- ✅ Focus traps on all overlays and lightbox
+- ✅ `:focus-visible` crimson rings on all interactive elements
+- ✅ Semantic markup (`<main>`, `<nav>`, `<ul>/<li>`, sr-only `<h1>`)
+- ✅ Dynamic document titles for screen readers

@@ -3,12 +3,15 @@ import { ArrowLeft, Share2, Check } from 'lucide-react';
 import Lightbox from './Lightbox';
 import ContentRenderer from './content/ContentRenderer';
 import OptimizedImage from './OptimizedImage';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 const ProjectDetail = ({ project, onClose }) => {
   const [visible, setVisible] = useState(false);
   const [lightboxImage, setLightboxImage] = useState(null);
   const [showToast, setShowToast] = useState(false);
   const containerRef = useRef(null);
+
+  useDocumentTitle(`${project.title} — 林`);
 
   // Check if this is a markdown-based post (has content array)
   const isMarkdownPost = Array.isArray(project.content);

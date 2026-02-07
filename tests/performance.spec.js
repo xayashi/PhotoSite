@@ -4,7 +4,7 @@ test.describe('Performance and Visual Verification', () => {
 
     test('scroll animation maintains high performance', async ({ page }) => {
         // Navigate to the local dev server
-        await page.goto('http://localhost:5174/');
+        await page.goto('/');
 
         // Wait for initial images to load
         await page.waitForSelector('.image-main.loaded');
@@ -38,7 +38,7 @@ test.describe('Performance and Visual Verification', () => {
     test('mobile images preserve aspect ratio on Samsung A16 viewport', async ({ page }) => {
         // Set viewport to Samsung A16-like dimensions (approx 412x915)
         await page.setViewportSize({ width: 412, height: 915 });
-        await page.goto('http://localhost:5174/');
+        await page.goto('/');
 
         // Wait for the first project card
         const firstCard = page.locator('[data-card]').first();
@@ -60,7 +60,7 @@ test.describe('Performance and Visual Verification', () => {
     });
 
     test('no excessive re-renders (checking for duplicate cursor)', async ({ page }) => {
-        await page.goto('http://localhost:5174/');
+        await page.goto('/');
 
         // Check if only one CustomCursor is present
         const cursors = await page.locator('[data-cursor-container]').count();

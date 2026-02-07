@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { X, ChevronRight, ChevronDown } from 'lucide-react';
 import { useFocusTrap } from '../hooks/useFocusTrap';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import OptimizedImage from './OptimizedImage';
 
 const ArchiveOverlay = ({ chapters = [], onClose, onSelectPost }) => {
   const [visible, setVisible] = useState(false);
   const [expandedChapters, setExpandedChapters] = useState({});
   const trapRef = useFocusTrap(visible);
+  useDocumentTitle('Archive — 林');
 
   useEffect(() => {
     setTimeout(() => setVisible(true), 50);

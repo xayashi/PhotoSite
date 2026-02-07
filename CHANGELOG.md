@@ -4,9 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [2.0.0] - 2026-02-06
 
 ### Added
+- SEO: Open Graph meta tags (`og:title`, `og:description`, `og:image`, `og:url`, `og:type`, `og:site_name`)
+- SEO: Twitter Card meta tags (`summary_large_image`)
+- SEO: `<link rel="canonical">` in `index.html`
+- SEO: Dynamic document titles via `useDocumentTitle` hook on all overlays and project detail
+- SEO: `siteUrl` added to `siteConfig` for canonical/OG URLs
+- Playwright integration tests: `navigation.spec.js` (10 tests), `accessibility.spec.js` (10 tests), `functionality.spec.js` (14 tests)
+- Playwright `webServer` config for auto-starting Vite dev server during tests
 - Vendor chunk splitting in Vite config (`vendor-react`, `vendor-markdown`, `vendor-icons`)
 - `React.lazy()` + `Suspense` code splitting for overlay components (ProjectDetail, AboutOverlay, ContactOverlay, ArchiveOverlay)
 - `<link rel="preload">` for font stylesheet and logo in `index.html`

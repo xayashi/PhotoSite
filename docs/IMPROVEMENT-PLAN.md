@@ -245,7 +245,7 @@ React 18 + Vite + Tailwind CSS photography portfolio deployed on Vercel. Full au
 
 ---
 
-### WP-2B: UX Polish - Lightbox Consistency & Error States
+### WP-2B: UX Polish - Lightbox Consistency & Error States — COMPLETED
 
 **Why**: Markdown post lightbox has no prev/next (legacy posts do). No error states for failed images.
 
@@ -262,7 +262,7 @@ React 18 + Vite + Tailwind CSS photography portfolio deployed on Vercel. Full au
 
 ## Phase 3: Polish (After Phase 2)
 
-### WP-3A: SEO & Meta Tags
+### WP-3A: SEO & Meta Tags — COMPLETED
 
 **Why**: No Open Graph tags, generic title, no dynamic page titles.
 
@@ -277,7 +277,7 @@ React 18 + Vite + Tailwind CSS photography portfolio deployed on Vercel. Full au
 
 ---
 
-### WP-3B: Integration Testing & Functional Verification
+### WP-3B: Integration Testing & Functional Verification — COMPLETED
 
 **Why**: Validate everything works together end-to-end.
 
@@ -293,7 +293,7 @@ React 18 + Vite + Tailwind CSS photography portfolio deployed on Vercel. Full au
 
 ---
 
-### WP-3C: Final Documentation Update
+### WP-3C: Final Documentation Update — COMPLETED
 
 **Why**: Ensure all docs reflect the completed state of the project.
 
@@ -317,18 +317,18 @@ WP-DOC (Documentation)     <- DONE
 WP-0  (Refactor App.jsx)   <- DONE
 WP-0B (Remove 3D hover)    <- DONE (also replaced skew wobble with parallax depth)
   |
-WP-1C (Test Posts)          <- NEXT: enables testing of subsequent changes
-WP-1A (React Router)        <- Architecture: biggest structural change
-WP-1B (Share Button)        <- Feature: small, builds on routing
-WP-1E (Detail centering)    <- UX fix: small, isolated
-WP-1D (Accessibility)       <- Quality: touches many files
+WP-1C (Test Posts)          <- DONE
+WP-1A (React Router)        <- DONE
+WP-1B (Share Button)        <- DONE
+WP-1E (Detail centering)    <- DONE
+WP-1D (Accessibility)       <- DONE
   |
-WP-2A (Performance)         <- Optimization: code splitting, images
-WP-2B (UX Polish)           <- Quality: lightbox, error states
+WP-2A (Performance)         <- DONE
+WP-2B (UX Polish)           <- DONE
   |
-WP-3A (SEO)                 <- Polish: meta tags, titles
-WP-3B (Testing)             <- Validation: end-to-end
-WP-3C (Final Docs)          <- Close out: documentation
+WP-3A (SEO)                 <- DONE
+WP-3B (Testing)             <- DONE
+WP-3C (Final Docs)          <- DONE
 ```
 
 ---
