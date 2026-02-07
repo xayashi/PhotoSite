@@ -55,8 +55,7 @@ const LandingCard = memo(({
           alt={item.title}
           className="w-full h-full"
           imgClassName={`color-reveal
-              ${isFocused ? 'scale-100 revealed' : 'scale-110'}
-              ${isHovered ? 'revealed' : ''}
+              ${isFocused || isHovered ? 'revealed' : ''}
           `}
           sizes="(max-width: 768px) 90vw, 40vw"
           widths={[640, 750, 828, 1080, 1200]}
