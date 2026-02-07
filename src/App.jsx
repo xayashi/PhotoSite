@@ -37,7 +37,7 @@ export default function App() {
   // Routing
   const location = useLocation();
   const navigate = useNavigate();
-  const { allProjects, chapters, findBySlug } = useProjects();
+  const { allProjects, landingProjects, chapters, findBySlug } = useProjects();
 
   // Derive overlay state from URL
   const projectSlug = location.pathname.match(/^\/project\/(.+)/)?.[1];
@@ -110,7 +110,7 @@ export default function App() {
       const cardMargin = getCardMargin();
       const startPadding = window.innerWidth * 0.5;
       const endSectionWidth = window.innerWidth * 0.5;
-      const totalContentWidth = startPadding + (allProjects.length * (cardWidth + (cardMargin * 2))) + endSectionWidth;
+      const totalContentWidth = startPadding + (landingProjects.length * (cardWidth + (cardMargin * 2))) + endSectionWidth;
       return Math.max(getMinScroll(), totalContentWidth - window.innerWidth + 100);
     };
 
@@ -130,7 +130,7 @@ export default function App() {
       const cardMargin = getCardMargin();
       const cardStep = cardWidth + (cardMargin * 2);
       const index = Math.round((scroll.current - minScroll) / cardStep);
-      const newIndex = Math.max(0, Math.min(allProjects.length - 1, index));
+      const newIndex = Math.max(0, Math.min(landingProjects.length - 1, index));
 
       // Update ref instead of state to avoid re-renders on every scroll movement
       if (currentCardIndexRef.current !== newIndex) {
@@ -254,7 +254,7 @@ export default function App() {
       window.removeEventListener('touchmove', handleTouchMove);
       cancelAnimationFrame(animationFrame);
     };
-  }, [allProjects.length]);
+  }, [landingProjects.length]);
 
   const handleCardClick = useCallback((id) => {
     setFocusedId(prev => prev === id ? null : id);
@@ -329,7 +329,7 @@ export default function App() {
         data-scroll-container
         className={`h-full flex items-center pl-[50vw] will-change-transform ${isOverlayOpen ? 'opacity-0 scale-95 pointer-events-none transition-all duration-700' : 'opacity-100 scale-100'}`}
       >
-        {allProjects.map((item, index) => (
+        {landingProjects.map((item, index) => (
           <LandingCard
             key={item.id}
             item={item}
@@ -350,19 +350,19 @@ export default function App() {
         <div
           className={`w-[50vw] flex-shrink-0 flex flex-col items-start justify-center gap-6 pl-12 transition-all duration-1000
             ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
-          style={{ transitionDelay: `${300 + allProjects.length * 100 + 200}ms` }}
+          style={{ transitionDelay: `${300 + landingProjects.length * 100 + 200}ms` }}
         >
-          <button
-            onClick={() => navigate('/archive')}
-            className="group text-left"
-          >
-            <span className="text-white/30 text-sm tracking-widest uppercase block mb-2 group-hover:text-crimson transition-colors">
+          <div>
+            <span className="text-white/30 text-sm tracking-widest uppercase block mb-2">
               See Additional Seasons
             </span>
-            <span className="text-2xl font-serif text-white/50 group-hover:text-crimson transition-colors">
+            <button
+              onClick={() => navigate('/archive')}
+              className="text-left text-2xl font-serif text-white/50 hover:text-crimson transition-colors"
+            >
               Browse the Archive →
-            </span>
-          </button>
+            </button>
+          </div>
           <button
             onClick={() => navigate('/contact')}
             className="text-left text-2xl font-serif text-white/40 hover:text-crimson transition-colors"

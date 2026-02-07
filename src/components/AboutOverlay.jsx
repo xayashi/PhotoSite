@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { X, MapPin, Calendar } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { X, MapPin, Calendar, ArrowRight } from 'lucide-react';
 import { siteConfig } from '../config';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
@@ -8,6 +9,7 @@ import OptimizedImage from './OptimizedImage';
 const AboutOverlay = ({ onClose }) => {
   const [visible, setVisible] = useState(false);
   const { about } = siteConfig;
+  const navigate = useNavigate();
   const trapRef = useFocusTrap(visible);
   useDocumentTitle('About — 林');
 
@@ -79,6 +81,20 @@ const AboutOverlay = ({ onClose }) => {
                 <Calendar size={14} className="text-crimson" />
                 {about.availability}
               </div>
+            </div>
+
+            {/* Get in Touch Button */}
+            <div className="mt-8">
+              <button
+                onClick={() => {
+                  setVisible(false);
+                  setTimeout(() => navigate('/contact'), 500);
+                }}
+                className="group inline-flex items-center gap-2 text-sm font-mono tracking-widest uppercase text-crimson hover:text-white transition-colors"
+              >
+                Get in Touch
+                <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+              </button>
             </div>
           </div>
         </div>

@@ -14,16 +14,20 @@ export const siteConfig = {
   siteUrl: "https://photosite.vercel.app",
 
   // Contact email
-  email: "hello@example.com",
+  email: "ksimpsontrek@gmail.com",
 
   // Social media links (leave empty string to hide)
   social: {
-    instagram: "https://instagram.com/",
-    twitter: "https://twitter.com/",
+    instagram: "https://www.instagram.com/_kai.884",
+    twitter: "",
     behance: "",
     dribbble: "",
     linkedin: "",
   },
+
+  // Active chapter shown on the landing page ("one roll of film at a time")
+  // Change this value to rotate which chapter appears on the landing page
+  activeChapter: "Season One",
 
   // About section content
   about: {
@@ -49,6 +53,7 @@ export const projects = [
   {
     id: 1,
     slug: "mono",
+    chapter: "Season One",
     title: "Mono",
     subtitle: "Tokyo, 2024",
     cover: "/images/landscape.jpg",
@@ -69,6 +74,7 @@ export const projects = [
   {
     id: 2,
     slug: "lumina",
+    chapter: "Season One",
     title: "Lumina",
     subtitle: "Iceland, 2024",
     cover: "/images/portrait.jpg",
@@ -82,6 +88,7 @@ export const projects = [
   {
     id: 3,
     slug: "vertex",
+    chapter: "Season One",
     title: "Vertex",
     subtitle: "New York, 2023",
     cover: "/images/landscape.jpg",
@@ -95,6 +102,7 @@ export const projects = [
   {
     id: 4,
     slug: "aether",
+    chapter: "Season One",
     title: "Aether",
     subtitle: "Highlands, 2023",
     cover: "/images/portrait.jpg",
@@ -107,6 +115,7 @@ export const projects = [
   {
     id: 5,
     slug: "epoch",
+    chapter: "Season One",
     title: "Epoch",
     subtitle: "Rome, 2022",
     cover: "/images/landscape.jpg",

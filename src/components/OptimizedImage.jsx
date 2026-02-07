@@ -134,7 +134,7 @@ const OptimizedImage = ({
                         setHasError(true);
                         setIsLoaded(true);
                     }}
-                    className={`w-full h-full object-cover transition-all duration-500 ${
+                    className={`w-full h-full object-cover transition-opacity duration-500 ${
                         isLoaded ? 'opacity-100' : 'opacity-0'
                     } ${imgClassName}`}
                     data-full-src={fullSrc || src}

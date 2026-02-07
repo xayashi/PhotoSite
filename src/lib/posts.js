@@ -159,9 +159,16 @@ export function parsePost(markdown, basePath = '') {
         cover = `${basePath}/${cover}`;
     }
 
+    // Resolve optional background image path
+    let background = frontmatter.background || null;
+    if (background && !background.startsWith('/') && !background.startsWith('http')) {
+        background = `${basePath}/${background}`;
+    }
+
     return {
         ...frontmatter,
         cover,
+        background,
         slug: basePath.split('/').pop(),
         basePath,
         content: processedBlocks,

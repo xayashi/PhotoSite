@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { loadPosts, getAllChapters } from '../lib/posts';
-import { projects as legacyProjects } from '../config';
+import { loadPosts } from '../lib/posts';
+import { projects as legacyProjects, siteConfig } from '../config';
 
 // Module-level cache to avoid duplicate fetches across components
 let cachedResult = null;
@@ -19,6 +19,19 @@ function mergeProjects(posts) {
   ];
 }
 
+// Build chapters from ALL projects (markdown + legacy)
+function buildAllChapters(projects) {
+  const chapters = {};
+  projects.forEach(project => {
+    const chapter = project.chapter || 'Uncategorized';
+    if (!chapters[chapter]) {
+      chapters[chapter] = { title: chapter, posts: [] };
+    }
+    chapters[chapter].posts.push(project);
+  });
+  return Object.values(chapters);
+}
+
 export function useProjects() {
   const [allProjects, setAllProjects] = useState(cachedResult?.projects || []);
   const [chapters, setChapters] = useState(cachedResult?.chapters || []);
@@ -30,7 +43,7 @@ export function useProjects() {
     if (!loadPromise) {
       loadPromise = loadPosts().then(posts => {
         const projects = mergeProjects(posts);
-        const chapters = getAllChapters(posts);
+        const chapters = buildAllChapters(projects);
         cachedResult = { projects, chapters };
         return cachedResult;
       });
@@ -45,5 +58,11 @@ export function useProjects() {
 
   const findBySlug = (slug) => allProjects.find(p => p.slug === slug);
 
-  return { allProjects, chapters, loading, findBySlug };
+  // Filter to active chapter for landing page
+  const { activeChapter } = siteConfig;
+  const landingProjects = activeChapter
+    ? allProjects.filter(p => p.chapter === activeChapter)
+    : allProjects;
+
+  return { allProjects, landingProjects, chapters, loading, findBySlug };
 }

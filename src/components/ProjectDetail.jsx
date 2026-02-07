@@ -89,12 +89,23 @@ const ProjectDetail = ({ project, onClose }) => {
       role="dialog"
       aria-modal="true"
       aria-label={project.title}
-      className={`fixed inset-0 z-[100] outline-none transition-[transform,opacity] duration-500 md:duration-700 ease-[cubic-bezier(0.76,0,0.24,1)] project-detail-bg
+      className={`fixed inset-0 z-[100] outline-none transition-[transform,opacity] duration-500 md:duration-700 ease-[cubic-bezier(0.76,0,0.24,1)]
       ${visible ? 'translate-y-0 opacity-100' : 'translate-y-[100vh] opacity-0'}`}
       style={{
         backgroundColor: '#f5f3ed',
       }}
     >
+      {/* Dynamic background image — per-post via frontmatter, falls back to default */}
+      <div
+        className="fixed inset-0 z-0 pointer-events-none"
+        style={{
+          backgroundImage: `url('${project.background || '/ProjectBackground.png'}')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      />
+
       {/* Navigation - Absolute relative to the fixed wrapper */}
       <nav className="absolute top-0 left-0 w-full p-6 md:p-8 flex justify-between items-center z-50 mix-blend-difference">
         <button
@@ -122,7 +133,7 @@ const ProjectDetail = ({ project, onClose }) => {
       <div
         ref={containerRef}
         tabIndex={-1}
-        className="w-full h-full overflow-y-auto scrollbar-hidden"
+        className="w-full h-full overflow-y-auto scrollbar-hidden overscroll-none"
       >
         {/* SCROLLABLE CONTENT LAYER */}
         <div className="relative z-10">

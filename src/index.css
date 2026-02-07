@@ -515,21 +515,8 @@ body::after {
   max-width: 8rem;
 }
 
-/* ============================================
-   Project Detail Background (pseudo-element replaces
-   backgroundAttachment:fixed which kills mobile perf)
-   ============================================ */
-.project-detail-bg::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image: url('/ProjectBackground.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  z-index: 0;
-  pointer-events: none;
-}
+/* Project Detail Background — now rendered as inline div in ProjectDetail.jsx
+   for per-post custom backgrounds via frontmatter `background:` field */
 
 /* ============================================
    MOBILE PERFORMANCE OPTIMIZATIONS
