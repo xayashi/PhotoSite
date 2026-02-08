@@ -3,7 +3,6 @@ const path = require('path');
 const readline = require('readline');
 
 const POSTS_DIR = path.join(__dirname, '..', 'public', 'content', 'posts');
-const MANIFEST_PATH = path.join(POSTS_DIR, 'index.json');
 
 // ── Helpers ──────────────────────────────────────────────────
 
@@ -91,20 +90,6 @@ async function optimizeAndCopy(srcPath, destPath) {
 
 function rawCopy(srcPath, destPath) {
   fs.copyFileSync(srcPath, destPath);
-}
-
-// ── Manifest update ─────────────────────────────────────────
-
-function updateManifest(slug) {
-  let manifest = [];
-  if (fs.existsSync(MANIFEST_PATH)) {
-    manifest = JSON.parse(fs.readFileSync(MANIFEST_PATH, 'utf-8'));
-  }
-  manifest.push({
-    path: `/content/posts/${slug}`,
-    slug,
-  });
-  fs.writeFileSync(MANIFEST_PATH, JSON.stringify(manifest, null, 4) + '\n', 'utf-8');
 }
 
 // ── Generate index.md ───────────────────────────────────────
@@ -316,15 +301,12 @@ async function main() {
   fs.writeFileSync(path.join(postDir, 'index.md'), markdown, 'utf-8');
   console.log(`  Created: public/content/posts/${slug}/index.md`);
 
-  // ── Update manifest ──
-  updateManifest(slug);
-  console.log(`  Updated: public/content/posts/index.json`);
-
   // ── Done ──
   console.log();
   if (imageCount > 0) {
     console.log(`  ${imageCount} image(s) copied${optimize ? ' (optimized to max 2400px)' : ''}`);
   }
+  console.log(`  Run "npm run dev" to regenerate the manifest and preview.`);
   console.log(`  View at: http://localhost:5173/project/${slug}`);
   console.log();
 

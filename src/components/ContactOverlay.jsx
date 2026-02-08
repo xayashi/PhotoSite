@@ -100,13 +100,13 @@ const ContactOverlay = ({ onClose }) => {
 
           {/* Bonsai — mobile (below social links) */}
           <div className={`mt-12 md:hidden transition-opacity duration-1000 delay-500 ${visible ? 'opacity-100' : 'opacity-0'}`}>
-            <BonsaiAnimation visible={visible} className="w-20 h-28 mx-auto" delayOffset={0.5} />
+            <BonsaiAnimation visible={visible} className="w-28 h-40 mx-auto" delayOffset={0.5} />
           </div>
         </div>
       </div>
 
-      {/* Bonsai — desktop (bottom-right decorative) */}
-      <BonsaiAnimation visible={visible} className="absolute right-8 bottom-24 w-32 h-48 hidden md:block" />
+      {/* Bonsai — desktop (center-bottom decorative) */}
+      <BonsaiAnimation visible={visible} className="absolute bottom-24 left-1/2 -translate-x-1/2 w-44 h-60 hidden md:block" />
 
       {/* Footer Text */}
       <div className="absolute bottom-8 left-0 right-0 flex flex-col items-center gap-2">

@@ -6,21 +6,26 @@ This guide explains how to add new blog posts to your photography portfolio.
 
 ## Quick Start
 
-1. Create a folder in `/public/content/posts/` with your post name:
+### Option A: Use the scaffolding script (recommended)
+
+```bash
+npm run new-post
+```
+
+The interactive CLI will prompt you for title, slug, chapter, cover image, and gallery images. It creates the post directory, copies/optimizes images, and writes the `index.md` skeleton for you.
+
+### Option B: Create manually
+
+1. Create a folder in `/public/content/posts/` with your post slug:
    ```
    public/content/posts/my-new-post/
    ```
 
-2. Add an `index.md` file with your content:
-   ```
-   public/content/posts/my-new-post/index.md
-   ```
+2. Add an `index.md` file with frontmatter and content (see below)
 
 3. Add your images to the same folder
 
-4. Update `/public/content/posts/index.json` to include your new post
-
-5. Refresh the site!
+4. Run `npm run dev` or `npm run build` — the manifest is auto-generated from your post directories
 
 ---
 
@@ -184,24 +189,11 @@ Tomorrow brings more adventures.
 
 ---
 
-## Adding to the Posts Index
+## How the Manifest Works
 
-After creating your post folder and files, add it to `index.json`:
+You do **not** need to manually maintain a post index. The build-time script `generate-manifest.cjs` scans all directories under `/public/content/posts/`, reads their frontmatter, and writes `manifest.json` automatically.
 
-```json
-[
-  {
-    "path": "/content/posts/autumn-midwest",
-    "slug": "autumn-midwest"
-  },
-  {
-    "path": "/content/posts/tokyo-nights",
-    "slug": "tokyo-nights"
-  }
-]
-```
-
-**Order matters!** The most recent posts should be first in the array.
+This happens every time you run `npm run dev` or `npm run build`.
 
 ---
 
@@ -211,7 +203,7 @@ After creating your post folder and files, add it to `index.json`:
 public/
   content/
     posts/
-      index.json              ← List of all posts
+      manifest.json           ← Auto-generated (do not edit)
       autumn-midwest/
         index.md              ← Your writing
         cover.jpg             ← Card cover image
@@ -244,9 +236,9 @@ public/
 ## Troubleshooting
 
 **Post not showing?**
-- Check that `index.json` includes your post
-- Verify the path matches your folder name
-- Ensure frontmatter has all required fields
+- Run `npm run dev` to regenerate the manifest
+- Verify your post folder has an `index.md` with valid frontmatter
+- Ensure frontmatter has all required fields (title, subtitle, date, cover, chapter)
 
 **Images not loading?**
 - Check the filename spelling

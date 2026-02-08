@@ -77,7 +77,7 @@ src/
   lib/posts.js         — Markdown content loading and parsing
   components/          — React components (overlays, cursor, image handling, content renderers)
 tests/                 — Playwright integration tests
-scripts/               — Image optimization script
+scripts/               — Manifest generation, post scaffolding, image optimization
 content/
   posts/               — Markdown posts with frontmatter
 public/

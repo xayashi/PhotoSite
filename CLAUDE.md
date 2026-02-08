@@ -51,8 +51,9 @@ src/
     SwipeHint.jsx       — Mobile swipe hint with localStorage persistence
     ProjectDetail.jsx   — Full project detail view + on-demand content loading + dynamic background + lightbox + share button
     AboutOverlay.jsx    — About page overlay (dialog + focus trap + "Get in Touch" → Contact)
-    ContactOverlay.jsx  — Contact page overlay (dialog + focus trap)
+    ContactOverlay.jsx  — Contact page overlay (dialog + focus trap + bonsai animation)
     ArchiveOverlay.jsx  — Archive/seasons browser overlay (dialog + focus trap, all chapters, tag filtering)
+    BonsaiAnimation.jsx — SVG bonsai tree drawing animation (contact page decoration)
     CustomCursor.jsx    — Custom cursor (desktop only)
     Lightbox.jsx        — Image lightbox component (dialog + focus trap)
     OptimizedImage.jsx  — Responsive image with srcset/sizes, transition-opacity only
@@ -67,8 +68,10 @@ tests/
   functionality.spec.js — SEO, share, lightbox, archive, landing page (14 tests)
   performance.spec.js   — Scroll perf, mobile aspect ratio, re-render check (7 tests)
 scripts/
-  generate-manifest.cjs — Build-time manifest generator (scans posts, outputs manifest.json)
-  optimize-images.cjs   — Sharp-based image optimization (responsive sizes, WebP, auto-rotate)
+  generate-manifest.cjs    — Build-time manifest generator (scans posts, outputs manifest.json)
+  optimize-images.cjs      — Sharp-based image optimization (responsive sizes, WebP, auto-rotate)
+  new-post.cjs             — Interactive CLI to scaffold a new post (creates dir, copies/optimizes images, writes index.md)
+  optimize-backgrounds.cjs — Optimizes background PNGs into responsive WebP/JPG variants
 ```
 
 ## Commands
@@ -77,8 +80,10 @@ npm run dev            # Generate manifest + start dev server
 npm run build          # Generate manifest + production build
 npm run preview        # Preview production build
 npm run generate-manifest # Regenerate manifest.json (auto-run by dev/build)
-npm run optimize-images   # Optimize images with sharp
-npx playwright test       # Run integration tests (auto-starts dev server)
+npm run optimize-images        # Optimize images with sharp
+npm run new-post               # Create a new post interactively
+npm run optimize-backgrounds   # Optimize background images
+npx playwright test            # Run integration tests (auto-starts dev server)
 ```
 
 ## Coding Conventions
