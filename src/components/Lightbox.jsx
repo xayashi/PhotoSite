@@ -49,7 +49,7 @@ const Lightbox = ({ image, onClose, onPrev, onNext, hasPrev, hasNext }) => {
           className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors p-2"
           onClick={(e) => { e.stopPropagation(); onPrev(); }}
         >
-          <ChevronLeft size={48} />
+          <ChevronLeft className="w-8 h-8 md:w-12 md:h-12" />
         </button>
       )}
       {hasNext && (
@@ -58,21 +58,21 @@ const Lightbox = ({ image, onClose, onPrev, onNext, hasPrev, hasNext }) => {
           className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors p-2"
           onClick={(e) => { e.stopPropagation(); onNext(); }}
         >
-          <ChevronRight size={48} />
+          <ChevronRight className="w-8 h-8 md:w-12 md:h-12" />
         </button>
       )}
 
       {/* Image + Caption container */}
       <div 
-        className="max-w-[90vw] max-h-[90vh] flex flex-col items-center px-16"
+        className="max-w-[95vw] md:max-w-[90vw] max-h-[90vh] flex flex-col items-center px-4 md:px-16"
         onClick={(e) => e.stopPropagation()}
       >
         <OptimizedImage
           src={src}
           alt={caption || ''}
-          className="max-w-full max-h-[75vh]"
+          className="max-w-full max-h-[85vh] md:max-h-[80vh]"
           imgClassName="!object-contain rounded-sm"
-          sizes="90vw"
+          sizes="(max-width: 768px) 95vw, 90vw"
           priority
         />
         
@@ -94,7 +94,7 @@ const Lightbox = ({ image, onClose, onPrev, onNext, hasPrev, hasNext }) => {
       </div>
 
       {/* Image counter */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/40 text-sm font-mono">
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/40 text-sm font-mono hidden md:block">
         Press ESC to close · ← → to navigate
       </div>
     </div>,

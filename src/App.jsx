@@ -29,7 +29,7 @@ export default function App() {
     return (cardWidth / 2) + cardMargin;
   };
   const scrollRef = useRef({ current: getInitialScroll(), target: getInitialScroll() });
-  const touchRef = useRef({ startX: 0, startY: 0 });
+  const touchRef = useRef({ startX: 0, startY: 0, samples: [], isScrolling: false });
   const cardRefs = useRef({});
   const progressBarRef = useRef(null);
   const currentCardIndexRef = useRef(0);
@@ -181,22 +181,53 @@ export default function App() {
       if (isOverlayOpenRef.current) return;
       touch.startX = e.touches[0].clientX;
       touch.startY = e.touches[0].clientY;
+      touch.samples = [{ x: e.touches[0].clientX, time: Date.now() }];
+      touch.isScrolling = false;
     };
 
     const handleTouchMove = (e) => {
       if (isOverlayOpenRef.current) return;
 
-      const deltaX = touch.startX - e.touches[0].clientX;
+      const currentX = e.touches[0].clientX;
+      const deltaX = touch.startX - currentX;
       const deltaY = touch.startY - e.touches[0].clientY;
 
-      // Only handle horizontal swipes
-      if (Math.abs(deltaX) > Math.abs(deltaY)) {
-        e.preventDefault();
-        // Increased sensitivity for mobile (2.0 instead of 1.5)
-        scroll.target += deltaX * 2.0;
-        scroll.target = Math.max(getMinScroll(), Math.min(scroll.target, getMaxScroll()));
-        touch.startX = e.touches[0].clientX;
+      // Commit to horizontal scrolling on first qualifying move
+      if (!touch.isScrolling && Math.abs(deltaX) > Math.abs(deltaY)) {
+        touch.isScrolling = true;
       }
+
+      if (touch.isScrolling) {
+        e.preventDefault();
+        scroll.target += deltaX * 1.5;
+        scroll.target = Math.max(getMinScroll(), Math.min(scroll.target, getMaxScroll()));
+        touch.startX = currentX;
+
+        // Record sample for velocity calculation (keep last 5)
+        const now = Date.now();
+        touch.samples.push({ x: currentX, time: now });
+        if (touch.samples.length > 5) touch.samples.shift();
+      }
+    };
+
+    const handleTouchEnd = () => {
+      if (isOverlayOpenRef.current) return;
+      if (!touch.isScrolling || touch.samples.length < 2) return;
+
+      const last = touch.samples[touch.samples.length - 1];
+      const first = touch.samples[0];
+      const dt = last.time - first.time;
+
+      if (dt > 0 && dt < 300) {
+        const velocity = (first.x - last.x) / dt; // px/ms, positive = scrolling right
+        if (Math.abs(velocity) > 0.3) {
+          scroll.target += velocity * 400;
+          scroll.target = Math.max(getMinScroll(), Math.min(scroll.target, getMaxScroll()));
+        }
+      }
+
+      touch.samples = [];
+      touch.isScrolling = false;
     };
 
     const animate = () => {
@@ -245,6 +276,7 @@ export default function App() {
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('touchstart', handleTouchStart, { passive: true });
     window.addEventListener('touchmove', handleTouchMove, { passive: false });
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
     animate();
 
     return () => {
@@ -252,6 +284,7 @@ export default function App() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('touchstart', handleTouchStart);
       window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
       cancelAnimationFrame(animationFrame);
     };
   }, [landingProjects.length]);

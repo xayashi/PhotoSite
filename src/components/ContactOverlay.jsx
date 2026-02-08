@@ -3,6 +3,7 @@ import { X, Mail, Instagram, Twitter, Linkedin, ExternalLink } from 'lucide-reac
 import { siteConfig } from '../config';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
+import BonsaiAnimation from './BonsaiAnimation';
 
 const ContactOverlay = ({ onClose }) => {
   const [visible, setVisible] = useState(false);
@@ -96,8 +97,16 @@ const ContactOverlay = ({ onClose }) => {
               })}
             </div>
           )}
+
+          {/* Bonsai — mobile (below social links) */}
+          <div className={`mt-12 md:hidden transition-opacity duration-1000 delay-500 ${visible ? 'opacity-100' : 'opacity-0'}`}>
+            <BonsaiAnimation visible={visible} className="w-20 h-28 mx-auto" delayOffset={0.5} />
+          </div>
         </div>
       </div>
+
+      {/* Bonsai — desktop (bottom-right decorative) */}
+      <BonsaiAnimation visible={visible} className="absolute right-8 bottom-24 w-32 h-48 hidden md:block" />
 
       {/* Footer Text */}
       <div className="absolute bottom-8 left-0 right-0 flex flex-col items-center gap-2">
