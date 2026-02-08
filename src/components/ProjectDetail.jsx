@@ -4,17 +4,32 @@ import Lightbox from './Lightbox';
 import ContentRenderer from './content/ContentRenderer';
 import OptimizedImage from './OptimizedImage';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
+import { loadPostContent } from '../lib/posts';
 
 const ProjectDetail = ({ project, onClose }) => {
   const [visible, setVisible] = useState(false);
   const [lightboxImage, setLightboxImage] = useState(null);
   const [showToast, setShowToast] = useState(false);
+  const [postContent, setPostContent] = useState(null);
+  const [contentLoading, setContentLoading] = useState(false);
   const containerRef = useRef(null);
 
   useDocumentTitle(`${project.title} — 林`);
 
-  // Check if this is a markdown-based post (has content array)
-  const isMarkdownPost = Array.isArray(project.content);
+  // Markdown posts have basePath (from manifest) and need content loaded on demand
+  const isMarkdownPost = !!project.basePath;
+  const contentBlocks = project.content || postContent;
+
+  // Load content on demand for markdown posts
+  useEffect(() => {
+    if (isMarkdownPost && !project.content && !postContent) {
+      setContentLoading(true);
+      loadPostContent(project.slug, project.basePath).then(blocks => {
+        setPostContent(blocks);
+        setContentLoading(false);
+      });
+    }
+  }, [project.slug]);
 
   // For legacy posts, get all images for lightbox
   const legacyImages = !isMarkdownPost && project.images ? project.images : [];
@@ -175,11 +190,17 @@ const ProjectDetail = ({ project, onClose }) => {
           {/* CONTENT SECTION */}
           <div className="py-16 md:py-24">
             {isMarkdownPost ? (
-              // NEW: Markdown-based content
-              <ContentRenderer
-                blocks={project.content}
-                onImageClick={openLightbox}
-              />
+              // Markdown-based content (loaded on demand)
+              contentLoading || !contentBlocks ? (
+                <div className="flex justify-center py-24">
+                  <div className="w-px h-16 bg-stone-300 animate-pulse" />
+                </div>
+              ) : (
+                <ContentRenderer
+                  blocks={contentBlocks}
+                  onImageClick={openLightbox}
+                />
+              )
             ) : (
               // LEGACY: Old format with description + images array
               <>

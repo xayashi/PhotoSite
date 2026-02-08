@@ -1,0 +1,66 @@
+[
+  {
+    "slug": "northern-lights",
+    "basePath": "/content/posts/northern-lights",
+    "title": "Northern Lights",
+    "subtitle": "Iceland, 2025",
+    "date": "2025-01-10",
+    "cover": "/images/landscape.jpg",
+    "chapter": "Season Three",
+    "description": "A week chasing the aurora across Iceland's frozen landscape.",
+    "tags": [
+      "nature",
+      "iceland",
+      "aurora"
+    ],
+    "background": null
+  },
+  {
+    "slug": "example-post",
+    "basePath": "/content/posts/example-post",
+    "title": "Autumn in the Midwest",
+    "subtitle": "November 2024",
+    "date": "2024-11-15",
+    "cover": "/images/landscape.jpg",
+    "chapter": "Season One",
+    "description": "",
+    "tags": [
+      "nature",
+      "midwest",
+      "autumn"
+    ],
+    "background": null
+  },
+  {
+    "slug": "urban-shadows",
+    "basePath": "/content/posts/urban-shadows",
+    "title": "Urban Shadows",
+    "subtitle": "Tokyo, 2024",
+    "date": "2024-08-20",
+    "cover": "/images/portrait.jpg",
+    "chapter": "Season Two",
+    "description": "Navigating the geometry of light and darkness in the streets of Shinjuku.",
+    "tags": [
+      "urban",
+      "tokyo",
+      "street"
+    ],
+    "background": null
+  },
+  {
+    "slug": "city-reflections",
+    "basePath": "/content/posts/city-reflections",
+    "title": "City Reflections",
+    "subtitle": "Minneapolis, 2024",
+    "date": "2024-06-05",
+    "cover": "/images/portrait.jpg",
+    "chapter": "Season One",
+    "description": "Finding stillness in familiar streets after a long winter.",
+    "tags": [
+      "urban",
+      "minneapolis",
+      "personal"
+    ],
+    "background": null
+  }
+]

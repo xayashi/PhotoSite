@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { X, ChevronRight, ChevronDown } from 'lucide-react';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
@@ -7,6 +7,7 @@ import OptimizedImage from './OptimizedImage';
 const ArchiveOverlay = ({ chapters = [], onClose, onSelectPost }) => {
   const [visible, setVisible] = useState(false);
   const [expandedChapters, setExpandedChapters] = useState({});
+  const [activeTag, setActiveTag] = useState(null);
   const trapRef = useFocusTrap(visible);
   useDocumentTitle('Archive — 林');
 
@@ -20,6 +21,41 @@ const ArchiveOverlay = ({ chapters = [], onClose, onSelectPost }) => {
     }
     setExpandedChapters(expanded);
   }, [chapters]);
+
+  // Collect unique tags from all posts across all chapters
+  const allTags = useMemo(() => {
+    const tagSet = new Set();
+    chapters.forEach(chapter => {
+      chapter.posts.forEach(post => {
+        (post.tags || []).forEach(tag => tagSet.add(tag));
+      });
+    });
+    return Array.from(tagSet).sort();
+  }, [chapters]);
+
+  // Filter chapters by active tag
+  const filteredChapters = useMemo(() => {
+    if (!activeTag) return chapters;
+    return chapters
+      .map(chapter => ({
+        ...chapter,
+        posts: chapter.posts.filter(post =>
+          (post.tags || []).includes(activeTag)
+        ),
+      }))
+      .filter(chapter => chapter.posts.length > 0);
+  }, [chapters, activeTag]);
+
+  // Reset expanded state when tag changes
+  useEffect(() => {
+    if (activeTag !== null) {
+      const expanded = {};
+      if (filteredChapters.length > 0) {
+        expanded[0] = true;
+      }
+      setExpandedChapters(expanded);
+    }
+  }, [activeTag]);
 
   const handleClose = () => {
     setVisible(false);
@@ -40,7 +76,11 @@ const ArchiveOverlay = ({ chapters = [], onClose, onSelectPost }) => {
     }, 300);
   };
 
-  const hasChapters = chapters && chapters.length > 0;
+  const handleTagClick = (tag) => {
+    setActiveTag(activeTag === tag ? null : tag);
+  };
+
+  const hasChapters = filteredChapters && filteredChapters.length > 0;
 
   return (
     <div
@@ -67,15 +107,44 @@ const ArchiveOverlay = ({ chapters = [], onClose, onSelectPost }) => {
             Archive
           </span>
 
-          <h2 className="text-4xl md:text-6xl font-serif mb-12 leading-tight">
+          <h2 className="text-4xl md:text-6xl font-serif mb-8 leading-tight">
             All Chapters
           </h2>
 
+          {/* Tag filter bar */}
+          {allTags.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-10" role="group" aria-label="Filter by tag">
+              <button
+                onClick={() => setActiveTag(null)}
+                className={`px-3 py-1 text-xs font-mono tracking-wider rounded-full border transition-colors
+                  ${!activeTag
+                    ? 'border-crimson text-crimson'
+                    : 'border-white/20 text-white/40 hover:border-white/40 hover:text-white/60'
+                  }`}
+              >
+                All
+              </button>
+              {allTags.map(tag => (
+                <button
+                  key={tag}
+                  onClick={() => handleTagClick(tag)}
+                  className={`px-3 py-1 text-xs font-mono tracking-wider rounded-full border transition-colors
+                    ${activeTag === tag
+                      ? 'border-crimson text-crimson'
+                      : 'border-white/20 text-white/40 hover:border-white/40 hover:text-white/60'
+                    }`}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          )}
+
           {hasChapters ? (
             <div className="space-y-8">
-              {chapters.map((chapter, chapterIndex) => (
+              {filteredChapters.map((chapter, chapterIndex) => (
                 <div
-                  key={chapterIndex}
+                  key={chapter.title}
                   className={`transition-all duration-500 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
                   style={{ transitionDelay: `${200 + chapterIndex * 100}ms` }}
                 >
@@ -136,9 +205,9 @@ const ArchiveOverlay = ({ chapters = [], onClose, onSelectPost }) => {
               ))}
             </div>
           ) : (
-            // Fallback when no chapters
-            <p className="text-center text-stone-500 py-12">
-              No archived posts yet. Start creating content!
+            // Fallback when no chapters match filter
+            <p className="text-center text-stone-500 py-12 font-mono text-sm">
+              {activeTag ? `No posts tagged "${activeTag}"` : 'No archived posts yet. Start creating content!'}
             </p>
           )}
         </div>

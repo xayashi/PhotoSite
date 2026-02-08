@@ -57,6 +57,7 @@ export const projects = [
     title: "Mono",
     subtitle: "Tokyo, 2024",
     cover: "/images/landscape.jpg",
+    tags: [],
     description: "A study of isolation in one of the world's most populous cities. We strip away the neon colors to reveal the geometry of loneliness.",
     images: [
       {
@@ -78,6 +79,7 @@ export const projects = [
     title: "Lumina",
     subtitle: "Iceland, 2024",
     cover: "/images/portrait.jpg",
+    tags: [],
     description: "Light behaves differently at the edge of the world. The refraction through glacial ice creates a spectrum invisible to the naked eye.",
     images: [
       "/images/landscape.jpg",
@@ -92,6 +94,7 @@ export const projects = [
     title: "Vertex",
     subtitle: "New York, 2023",
     cover: "/images/landscape.jpg",
+    tags: [],
     description: "Looking up. The vertical canyons of Manhattan create a unique ecosystem of shadow and reflected light.",
     images: [
       "/images/portrait.jpg",
@@ -106,6 +109,7 @@ export const projects = [
     title: "Aether",
     subtitle: "Highlands, 2023",
     cover: "/images/portrait.jpg",
+    tags: [],
     description: "Fog and stone. The Scottish Highlands reveal their ancient secrets only to those who wait.",
     images: [
       "/images/landscape.jpg",
@@ -119,6 +123,7 @@ export const projects = [
     title: "Epoch",
     subtitle: "Rome, 2022",
     cover: "/images/landscape.jpg",
+    tags: [],
     description: "Ancient stone holds memories of empires. Walking these streets is walking through layers of time.",
     images: [
       "/images/portrait.jpg",

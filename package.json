@@ -4,8 +4,9 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "generate-manifest": "node scripts/generate-manifest.cjs",
+    "dev": "node scripts/generate-manifest.cjs && vite",
+    "build": "node scripts/generate-manifest.cjs && vite build",
     "preview": "vite preview",
     "optimize-images": "node scripts/optimize-images.cjs"
   },

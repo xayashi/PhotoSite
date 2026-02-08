@@ -1,8 +1,3 @@
-import { marked } from 'marked';
-
-// Site configuration
-export const LANDING_PAGE_POSTS = 5; // Number of posts to show on landing page
-
 /**
  * Simple frontmatter parser (browser-compatible)
  * Parses YAML-like frontmatter from markdown
@@ -123,24 +118,19 @@ function parseCustomBlocks(content) {
 }
 
 /**
- * Parse a single markdown post
+ * Process parsed blocks: convert markdown to HTML and resolve image paths.
+ * Uses dynamic import for marked so the library loads only when needed.
  */
-export function parsePost(markdown, basePath = '') {
-    const { data: frontmatter, content } = parseFrontmatter(markdown);
+async function processBlocks(blocks, basePath) {
+    const { marked } = await import('marked');
 
-    // Parse content into blocks
-    const blocks = parseCustomBlocks(content);
-
-    // Process markdown blocks and resolve image paths
-    const processedBlocks = blocks.map(block => {
+    return blocks.map(block => {
         if (block.type === 'markdown') {
-            // Convert markdown to HTML
             const html = marked.parse(block.content);
             return { type: 'html', content: html };
         }
 
         if (block.type === 'gallery') {
-            // Resolve relative image paths
             const images = block.images.map(img => {
                 if (img.startsWith('/') || img.startsWith('http')) {
                     return img;
@@ -152,114 +142,43 @@ export function parsePost(markdown, basePath = '') {
 
         return block;
     });
-
-    // Resolve cover image path
-    let cover = frontmatter.cover || 'cover.jpg';
-    if (!cover.startsWith('/') && !cover.startsWith('http')) {
-        cover = `${basePath}/${cover}`;
-    }
-
-    // Resolve optional background image path
-    let background = frontmatter.background || null;
-    if (background && !background.startsWith('/') && !background.startsWith('http')) {
-        background = `${basePath}/${background}`;
-    }
-
-    return {
-        ...frontmatter,
-        cover,
-        background,
-        slug: basePath.split('/').pop(),
-        basePath,
-        content: processedBlocks,
-    };
 }
 
 /**
- * Load all posts from the posts index
+ * Load the posts manifest (metadata only, no content).
+ * Returns an array of post metadata objects for the landing page and archive.
  */
-export async function loadPosts() {
+export async function loadPostsManifest() {
     try {
-        // Fetch the posts index
-        const response = await fetch('/content/posts/index.json');
+        const response = await fetch('/content/posts/manifest.json');
         if (!response.ok) {
-            console.warn('Posts index not found, using fallback');
+            console.warn('Posts manifest not found');
             return [];
         }
-
-        const postsIndex = await response.json();
-
-        // Load each post's markdown
-        const posts = await Promise.all(
-            postsIndex.map(async (postInfo) => {
-                try {
-                    const mdResponse = await fetch(`${postInfo.path}/index.md`);
-                    if (!mdResponse.ok) return null;
-
-                    const markdown = await mdResponse.text();
-                    return parsePost(markdown, postInfo.path);
-                } catch (e) {
-                    console.error(`Failed to load post: ${postInfo.path}`, e);
-                    return null;
-                }
-            })
-        );
-
-        // Filter out failed loads and sort by date (newest first)
-        return posts
-            .filter(Boolean)
-            .sort((a, b) => new Date(b.date) - new Date(a.date));
+        const manifest = await response.json();
+        return manifest.sort((a, b) => new Date(b.date) - new Date(a.date));
     } catch (e) {
-        console.error('Failed to load posts:', e);
+        console.error('Failed to load posts manifest:', e);
         return [];
     }
 }
 
 /**
- * Get posts for the landing page (most recent X posts)
+ * Load the full content of a single post on demand.
+ * Fetches the markdown file, parses custom blocks, and converts to HTML.
+ * The marked library is loaded dynamically only when this is called.
  */
-export function getLandingPagePosts(posts) {
-    return posts.slice(0, LANDING_PAGE_POSTS);
-}
+export async function loadPostContent(slug, basePath) {
+    try {
+        const response = await fetch(`${basePath}/index.md`);
+        if (!response.ok) return null;
 
-/**
- * Get archived posts grouped by chapter
- */
-export function getArchivedPosts(posts) {
-    const archivedPosts = posts.slice(LANDING_PAGE_POSTS);
-
-    // Group by chapter
-    const chapters = {};
-    archivedPosts.forEach(post => {
-        const chapter = post.chapter || 'Uncategorized';
-        if (!chapters[chapter]) {
-            chapters[chapter] = {
-                title: chapter,
-                posts: [],
-            };
-        }
-        chapters[chapter].posts.push(post);
-    });
-
-    return Object.values(chapters);
-}
-
-/**
- * Get all chapters (for when all posts should show in archive)
- */
-export function getAllChapters(posts) {
-    const chapters = {};
-
-    posts.forEach(post => {
-        const chapter = post.chapter || 'Uncategorized';
-        if (!chapters[chapter]) {
-            chapters[chapter] = {
-                title: chapter,
-                posts: [],
-            };
-        }
-        chapters[chapter].posts.push(post);
-    });
-
-    return Object.values(chapters);
+        const markdown = await response.text();
+        const { content } = parseFrontmatter(markdown);
+        const blocks = parseCustomBlocks(content);
+        return await processBlocks(blocks, basePath);
+    } catch (e) {
+        console.error(`Failed to load content for ${slug}:`, e);
+        return null;
+    }
 }

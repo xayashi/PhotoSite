@@ -8,7 +8,7 @@ Personal alternative to Instagram. Creative storytelling through photography and
 - **Build:** Vite 6.0.3
 - **Styling:** Tailwind CSS 3.4.16
 - **Routing:** react-router-dom (BrowserRouter)
-- **Markdown:** marked 17.0.1 (custom frontmatter parser, no gray-matter)
+- **Markdown:** marked 17.0.1 (custom frontmatter parser, no gray-matter, dynamically imported)
 - **Icons:** lucide-react
 - **Deployment:** Vercel
 - **Testing:** Playwright (41 integration tests)
@@ -22,10 +22,12 @@ Personal alternative to Instagram. Creative storytelling through photography and
   - `/contact` — Contact overlay
   - `/archive` — Archive overlay (all chapters, including legacy projects)
 - **Content system:** Markdown files with YAML frontmatter + custom blocks (`:::gallery`, `:::youtube`)
-- **Legacy projects:** Hardcoded in `src/config.js` with `slug`, `chapter`, and image arrays
-- **Markdown posts:** Loaded from `/content/posts/` via `src/lib/posts.js`
-- **Chapter system:** `siteConfig.activeChapter` controls which chapter shows on landing page. `useProjects` hook filters `landingProjects` by active chapter. Archive shows all chapters (markdown + legacy).
-- **Project loading:** `useProjects` hook merges markdown posts + legacy projects, builds chapters from all projects, module-level cache prevents duplicate fetches. Returns `{ allProjects, landingProjects, chapters, loading, findBySlug }`.
+- **Manifest system:** Build-time script (`scripts/generate-manifest.cjs`) scans post directories and generates `public/content/posts/manifest.json` with all frontmatter metadata. The browser fetches this single JSON file instead of N+1 individual markdown files. Full markdown content is loaded on-demand when a post detail page opens.
+- **Legacy projects:** Hardcoded in `src/config.js` with `slug`, `chapter`, `tags`, and image arrays
+- **Markdown posts:** Stored in `/content/posts/<slug>/index.md`. Metadata served via manifest; content loaded on demand via `loadPostContent()`.
+- **Chapter system:** `siteConfig.activeChapter` controls which chapter shows on landing page. `useProjects` hook filters `landingProjects` by active chapter. Archive shows all chapters (markdown + legacy), sorted newest-first.
+- **Tag system:** Posts can specify `tags: [tag1, tag2]` in frontmatter. Archive overlay has cross-chapter tag filter chips. Legacy projects have `tags: []`.
+- **Project loading:** `useProjects` hook loads manifest metadata + legacy projects, builds chapters (sorted by newest post date), module-level cache prevents duplicate fetches. Returns `{ allProjects, landingProjects, chapters, loading, findBySlug }`. Post content loaded separately via `loadPostContent()`.
 - **Per-post backgrounds:** Posts can specify `background:` in frontmatter for a custom detail page background. Falls back to `/ProjectBackground.png`.
 - **SEO:** OG/Twitter meta tags in `index.html`, dynamic document titles via `useDocumentTitle` hook
 - **Code splitting:** `React.lazy()` for all overlay components, vendor chunk splitting in Vite config
@@ -38,19 +40,19 @@ src/
   index.css            — Custom animations, responsive styles, a11y, markdown styling, mobile perf
   main.jsx             — React entry point (BrowserRouter wrapper)
   hooks/
-    useProjects.js     — Loads & merges markdown + legacy projects, filters by activeChapter, builds chapters
+    useProjects.js     — Loads manifest + legacy projects, filters by activeChapter, builds chapters (sorted newest-first)
     useFocusTrap.js    — Reusable focus trap for modals/overlays
     useDocumentTitle.js — Sets/restores document.title for dynamic page titles
   lib/
-    posts.js           — Markdown post loading, frontmatter parsing, custom blocks, background path resolution
+    posts.js           — Manifest loading (loadPostsManifest), on-demand content loading (loadPostContent), frontmatter parsing, custom blocks
   components/
     AnimatedTitle.jsx   — Staggered letter animation for card titles
     LandingCard.jsx     — Memoized card with OptimizedImage, color-reveal, VIEW prompt
     SwipeHint.jsx       — Mobile swipe hint with localStorage persistence
-    ProjectDetail.jsx   — Full project detail view + dynamic background + lightbox + share button
+    ProjectDetail.jsx   — Full project detail view + on-demand content loading + dynamic background + lightbox + share button
     AboutOverlay.jsx    — About page overlay (dialog + focus trap + "Get in Touch" → Contact)
     ContactOverlay.jsx  — Contact page overlay (dialog + focus trap)
-    ArchiveOverlay.jsx  — Archive/seasons browser overlay (dialog + focus trap, all chapters)
+    ArchiveOverlay.jsx  — Archive/seasons browser overlay (dialog + focus trap, all chapters, tag filtering)
     CustomCursor.jsx    — Custom cursor (desktop only)
     Lightbox.jsx        — Image lightbox component (dialog + focus trap)
     OptimizedImage.jsx  — Responsive image with srcset/sizes, transition-opacity only
@@ -65,16 +67,18 @@ tests/
   functionality.spec.js — SEO, share, lightbox, archive, landing page (14 tests)
   performance.spec.js   — Scroll perf, mobile aspect ratio, re-render check (7 tests)
 scripts/
+  generate-manifest.cjs — Build-time manifest generator (scans posts, outputs manifest.json)
   optimize-images.cjs   — Sharp-based image optimization (responsive sizes, WebP, auto-rotate)
 ```
 
 ## Commands
 ```bash
-npm run dev            # Start dev server (Vite)
-npm run build          # Production build
+npm run dev            # Generate manifest + start dev server
+npm run build          # Generate manifest + production build
 npm run preview        # Preview production build
-npm run optimize-images # Optimize images with sharp
-npx playwright test    # Run integration tests (auto-starts dev server)
+npm run generate-manifest # Regenerate manifest.json (auto-run by dev/build)
+npm run optimize-images   # Optimize images with sharp
+npx playwright test       # Run integration tests (auto-starts dev server)
 ```
 
 ## Coding Conventions
@@ -105,9 +109,12 @@ cover: cover.jpg
 date: 2024-01-15
 chapter: Chapter Name
 description: Brief description
-background: bg-texture.jpg    # Optional: custom detail page background
+tags: [landscape, travel, nature]  # Optional: used for archive tag filtering
+background: bg-texture.jpg         # Optional: custom detail page background
 ---
 ```
+
+After adding or modifying posts, the manifest is auto-regenerated by `npm run dev` / `npm run build`. The manifest (`public/content/posts/manifest.json`) contains all frontmatter metadata for fast loading. Full markdown content is only fetched when a user opens a specific post.
 
 Custom blocks in markdown:
 - `:::gallery` + image paths + `:::` — renders image grid
@@ -119,7 +126,8 @@ Custom blocks in markdown:
 - Markdown posts use `chapter` frontmatter field
 - `useProjects` hook returns `landingProjects` (filtered by activeChapter) and `allProjects` (all)
 - To rotate chapters: change `activeChapter` value in config.js — old chapter moves to archive automatically
-- Archive shows ALL chapters (both markdown and legacy) via `buildAllChapters()`
+- Archive shows ALL chapters (both markdown and legacy) via `buildAllChapters()`, sorted newest-first by post date
+- Archive has cross-chapter tag filter chips: clicking a tag filters posts across all chapters, hiding empty chapters
 
 ## Patterns
 - Landing scroll uses `requestAnimationFrame` with inertia physics

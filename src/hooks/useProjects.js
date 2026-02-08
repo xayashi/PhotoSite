@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { loadPosts } from '../lib/posts';
+import { loadPostsManifest } from '../lib/posts';
 import { projects as legacyProjects, siteConfig } from '../config';
 
 // Module-level cache to avoid duplicate fetches across components
@@ -19,7 +19,7 @@ function mergeProjects(posts) {
   ];
 }
 
-// Build chapters from ALL projects (markdown + legacy)
+// Build chapters from ALL projects (markdown + legacy), sorted newest-first
 function buildAllChapters(projects) {
   const chapters = {};
   projects.forEach(project => {
@@ -29,7 +29,12 @@ function buildAllChapters(projects) {
     }
     chapters[chapter].posts.push(project);
   });
-  return Object.values(chapters);
+
+  return Object.values(chapters).sort((a, b) => {
+    const aNewest = Math.max(...a.posts.map(p => new Date(p.date || 0)));
+    const bNewest = Math.max(...b.posts.map(p => new Date(p.date || 0)));
+    return bNewest - aNewest;
+  });
 }
 
 export function useProjects() {
@@ -41,7 +46,7 @@ export function useProjects() {
     if (cachedResult) return;
 
     if (!loadPromise) {
-      loadPromise = loadPosts().then(posts => {
+      loadPromise = loadPostsManifest().then(posts => {
         const projects = mergeProjects(posts);
         const chapters = buildAllChapters(projects);
         cachedResult = { projects, chapters };
