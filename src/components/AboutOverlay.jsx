@@ -86,10 +86,7 @@ const AboutOverlay = ({ onClose }) => {
             {/* Get in Touch Button */}
             <div className="mt-8">
               <button
-                onClick={() => {
-                  setVisible(false);
-                  setTimeout(() => navigate('/contact'), 500);
-                }}
+                onClick={() => navigate('/contact')}
                 className="group inline-flex items-center gap-2 text-sm font-mono tracking-widest uppercase text-crimson hover:text-white transition-colors"
               >
                 Get in Touch

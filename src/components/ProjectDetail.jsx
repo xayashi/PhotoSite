@@ -97,7 +97,7 @@ const ProjectDetail = ({ project, onClose }) => {
     >
       {/* Dynamic background image — per-post via frontmatter, falls back to default */}
       <div
-        className="fixed inset-0 z-0 pointer-events-none"
+        className="absolute inset-0 z-0 pointer-events-none"
         style={{
           backgroundImage: `url('${project.background || '/ProjectBackground.png'}')`,
           backgroundSize: 'cover',
@@ -149,7 +149,7 @@ const ProjectDetail = ({ project, onClose }) => {
               alt={project.title}
               className="w-full h-full"
               sizes="100vw"
-              widths={[640, 750, 828, 1080, 1200, 1920, 2400]}
+              widths={[640, 750, 828, 1080, 1200, 1920, 2048]}
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40" />
 

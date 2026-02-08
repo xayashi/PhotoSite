@@ -6,7 +6,7 @@ const IS_VERCEL = typeof window !== 'undefined' &&
     !window.location.hostname.includes('localhost') &&
     !window.location.hostname.includes('127.0.0.1');
 
-const DEFAULT_WIDTHS = [640, 750, 828, 1080, 1200, 1920, 2400];
+const DEFAULT_WIDTHS = [640, 750, 828, 1080, 1200, 1920, 2048];
 
 /**
  * OptimizedImage component with responsive image support
@@ -129,6 +129,7 @@ const OptimizedImage = ({
                     sizes={sizes}
                     alt={alt}
                     loading={priority ? 'eager' : 'lazy'}
+                    fetchPriority={priority ? 'high' : undefined}
                     onLoad={() => setIsLoaded(true)}
                     onError={() => {
                         setHasError(true);
