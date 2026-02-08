@@ -89,7 +89,7 @@ const ProjectDetail = ({ project, onClose }) => {
       role="dialog"
       aria-modal="true"
       aria-label={project.title}
-      className={`fixed inset-0 z-[100] outline-none transition-[transform,opacity] duration-500 md:duration-700 ease-[cubic-bezier(0.76,0,0.24,1)]
+      className={`fixed inset-0 z-[100] outline-none overflow-hidden transition-[transform,opacity] duration-500 md:duration-700 ease-[cubic-bezier(0.76,0,0.24,1)]
       ${visible ? 'translate-y-0 opacity-100' : 'translate-y-[100vh] opacity-0'}`}
       style={{
         backgroundColor: '#f5f3ed',
@@ -97,8 +97,10 @@ const ProjectDetail = ({ project, onClose }) => {
     >
       {/* Dynamic background image — per-post via frontmatter, falls back to default */}
       <div
-        className="absolute inset-0 z-0 pointer-events-none"
+        className="absolute left-0 right-0 z-0 pointer-events-none"
         style={{
+          top: '-15vh',
+          bottom: '-15vh',
           backgroundImage: `url('${project.background || '/ProjectBackground.png'}')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',

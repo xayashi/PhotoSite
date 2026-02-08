@@ -372,6 +372,11 @@ export default function App() {
         </div>
       </main>
 
+      {/* Backdrop — masks landing page during overlay transitions */}
+      {isOverlayOpen && (
+        <div className="fixed inset-0 z-[99] bg-[#121212]" />
+      )}
+
       {/* OVERLAYS — driven by URL, lazy-loaded */}
       <Suspense fallback={null}>
         {selectedProject && (

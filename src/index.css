@@ -16,6 +16,7 @@
 /* Smooth scrolling for the whole document */
 html {
   scroll-behavior: smooth;
+  overscroll-behavior: none;
 }
 
 /* Hide scrollbar but keep functionality */
@@ -126,6 +127,11 @@ body::after {
     filter: brightness(0) saturate(100%) invert(18%) sepia(90%) saturate(2000%) hue-rotate(340deg) brightness(0.9);
     transform: scale(1.08);
   }
+}
+
+.logo-interactive:active {
+  filter: brightness(0) saturate(100%) invert(18%) sepia(90%) saturate(2000%) hue-rotate(340deg) brightness(0.9);
+  transform: scale(0.95);
 }
 
 /* ============================================
