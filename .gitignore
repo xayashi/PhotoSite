@@ -33,5 +33,9 @@ lighthouse-*.report.json
 parse-lighthouse.cjs
 compare-audits.cjs
 
-# Claude Code plans
+# Claude Code
 .claude/
+.agents/
+
+# Test artifacts
+test-results/

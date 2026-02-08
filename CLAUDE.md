@@ -46,7 +46,6 @@ src/
   components/
     AnimatedTitle.jsx   — Staggered letter animation for card titles
     LandingCard.jsx     — Memoized card with OptimizedImage, color-reveal, VIEW prompt
-    LazyImage.jsx       — Intersection Observer lazy loading (legacy, not used on landing cards)
     SwipeHint.jsx       — Mobile swipe hint with localStorage persistence
     ProjectDetail.jsx   — Full project detail view + dynamic background + lightbox + share button
     AboutOverlay.jsx    — About page overlay (dialog + focus trap + "Get in Touch" → Contact)

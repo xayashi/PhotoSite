@@ -15,7 +15,7 @@ A personal photography portfolio built as a creative alternative to Instagram. E
 - Code-split overlays via `React.lazy()` + vendor chunk splitting
 - Responsive images via `OptimizedImage` with srcset/sizes
 - Custom cursor (desktop), swipe hint (mobile)
-- 37 Playwright integration tests
+- 41 Playwright integration tests
 
 ## Tech Stack
 
