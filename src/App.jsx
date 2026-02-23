@@ -2,6 +2,7 @@ import { useRef, useEffect, useState, useCallback, useMemo, lazy, Suspense } fro
 import { useLocation, useNavigate } from 'react-router-dom';
 import { siteConfig } from './config';
 import { useProjects } from './hooks/useProjects';
+import { useKeyboardNavigation } from './hooks/useKeyboardNavigation';
 import CustomCursor from './components/CustomCursor';
 import LandingCard from './components/LandingCard';
 import SwipeHint from './components/SwipeHint';
@@ -13,6 +14,7 @@ const ContactOverlay = lazy(() => import('./components/ContactOverlay'));
 const ArchiveOverlay = lazy(() => import('./components/ArchiveOverlay'));
 
 export default function App() {
+  useKeyboardNavigation();
   const scrollContainerRef = useRef(null);
   // Calculate initial scroll position to center slide 1
   // The container has pl-[50vw] which puts content starting at viewport center
@@ -31,7 +33,6 @@ export default function App() {
   const scrollRef = useRef({ current: getInitialScroll(), target: getInitialScroll() });
   const touchRef = useRef({ startX: 0, startY: 0, samples: [], isScrolling: false });
   const cardRefs = useRef({});
-  const progressBarRef = useRef(null);
   const currentCardIndexRef = useRef(0);
 
   // Routing
@@ -120,11 +121,6 @@ export default function App() {
       const progress = (scroll.current - minScroll) / (maxScroll - minScroll);
       const clampedProgress = Math.max(0, Math.min(1, progress));
 
-      // Direct DOM manipulation for performance
-      if (progressBarRef.current) {
-        progressBarRef.current.style.transform = `scaleX(${clampedProgress})`;
-      }
-
       // Calculate current card index
       const cardWidth = getCardWidth();
       const cardMargin = getCardMargin();
@@ -199,7 +195,7 @@ export default function App() {
 
       if (touch.isScrolling) {
         e.preventDefault();
-        scroll.target += deltaX * 1.5;
+        scroll.target += deltaX;
         scroll.target = Math.max(getMinScroll(), Math.min(scroll.target, getMaxScroll()));
         touch.startX = currentX;
 
@@ -237,7 +233,8 @@ export default function App() {
         return;
       }
 
-      const ease = 0.08;
+      // Bypass ease delay while actively dragging for 1:1 finger tracking
+      const ease = touch.isScrolling ? 1 : 0.08;
       const diff = scroll.target - scroll.current;
       scroll.current += diff * ease;
 
@@ -290,8 +287,18 @@ export default function App() {
   }, [landingProjects.length]);
 
   const handleCardClick = useCallback((id) => {
-    setFocusedId(prev => prev === id ? null : id);
-  }, []);
+    // Differentiate touch vs mouse. If hover is supported, we can navigate directly.
+    const hasHover = window.matchMedia('(hover: hover)').matches;
+    if (hasHover) {
+      const project = landingProjects.find(p => p.id === id);
+      if (project) {
+        navigate(`/project/${project.slug}`);
+        setFocusedId(null);
+      }
+    } else {
+      setFocusedId(prev => prev === id ? null : id);
+    }
+  }, [landingProjects, navigate]);
 
   const handleViewClick = useCallback((e, project) => {
     e.stopPropagation();
@@ -335,7 +342,7 @@ export default function App() {
         {/* Logo - clickable to open About */}
         <button
           onClick={() => navigate('/about')}
-          className="pointer-events-auto logo-interactive"
+          className="group pointer-events-auto logo-interactive flex items-center gap-4"
           aria-label="About"
         >
           <img
@@ -343,6 +350,7 @@ export default function App() {
             alt={siteConfig.siteName}
             className="h-12 md:h-16 w-auto invert"
           />
+          <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-sm font-mono tracking-widest text-white/50 hidden md:inline-block">ABOUT</span>
         </button>
 
         {/* Navigation Links - Contact button removed */}
@@ -352,7 +360,7 @@ export default function App() {
       </nav>
 
       {/* Scroll Hint */}
-      <div className={`fixed bottom-8 left-8 text-xs tracking-[0.2em] uppercase opacity-40 hidden md:block pointer-events-none transition-all duration-1000 delay-700 ${isLoaded ? 'opacity-40 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+      <div className={`fixed bottom-12 left-8 text-xs tracking-[0.2em] uppercase opacity-40 hidden md:block pointer-events-none transition-all duration-1000 delay-700 ${isLoaded ? 'opacity-40 translate-y-0' : 'opacity-0 translate-y-4'}`}>
         Scroll to Explore
       </div>
 
@@ -415,7 +423,10 @@ export default function App() {
         {selectedProject && (
           <ProjectDetail
             project={selectedProject}
-            onClose={() => navigate('/')}
+            onClose={() => {
+              const from = location.state?.from;
+              navigate(from || '/');
+            }}
           />
         )}
 
@@ -431,7 +442,7 @@ export default function App() {
           <ArchiveOverlay
             chapters={chapters}
             onClose={() => navigate('/')}
-            onSelectPost={(post) => navigate(`/project/${post.slug}`)}
+            onSelectPost={(post) => navigate(`/project/${post.slug}`, { state: { from: '/archive' } })}
           />
         )}
       </Suspense>

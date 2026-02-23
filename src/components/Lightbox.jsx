@@ -4,8 +4,20 @@ import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 import OptimizedImage from './OptimizedImage';
 
-const Lightbox = ({ image, onClose, onPrev, onNext, hasPrev, hasNext }) => {
+const Lightbox = ({ image, onClose, onPrev, onNext, hasPrev, hasNext, prevImageSrc, nextImageSrc }) => {
   const trapRef = useFocusTrap(true);
+
+  // Preload adjacent images
+  useEffect(() => {
+    if (prevImageSrc) {
+      const img = new Image();
+      img.src = prevImageSrc;
+    }
+    if (nextImageSrc) {
+      const img = new Image();
+      img.src = nextImageSrc;
+    }
+  }, [prevImageSrc, nextImageSrc]);
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -63,19 +75,20 @@ const Lightbox = ({ image, onClose, onPrev, onNext, hasPrev, hasNext }) => {
       )}
 
       {/* Image + Caption container */}
-      <div 
+      <div
         className="max-w-[95vw] md:max-w-[90vw] max-h-[90vh] flex flex-col items-center px-4 md:px-16"
         onClick={(e) => e.stopPropagation()}
       >
         <OptimizedImage
           src={src}
           alt={caption || ''}
-          className="max-w-full max-h-[85vh] md:max-h-[80vh]"
-          imgClassName="!object-contain rounded-sm"
+          className="flex justify-center items-center !w-auto !h-auto max-w-[95vw] md:max-w-[90vw] max-h-[85vh] md:max-h-[80vh]"
+          imgClassName="!w-auto !h-auto max-w-full max-h-[85vh] md:max-h-[80vh] rounded-sm"
+          objectFit="contain"
           sizes="(max-width: 768px) 95vw, 90vw"
           priority
         />
-        
+
         {/* Caption & EXIF */}
         {(caption || exif) && (
           <div className="mt-6 text-center max-w-2xl">
@@ -94,7 +107,7 @@ const Lightbox = ({ image, onClose, onPrev, onNext, hasPrev, hasNext }) => {
       </div>
 
       {/* Image counter */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/40 text-sm font-mono hidden md:block">
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/80 bg-black/50 px-4 py-1.5 rounded-full text-sm font-mono hidden md:block backdrop-blur-sm z-10">
         Press ESC to close · ← → to navigate
       </div>
     </div>,

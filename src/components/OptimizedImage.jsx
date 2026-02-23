@@ -28,6 +28,7 @@ const OptimizedImage = ({
     style = {},
     sizes = '100vw', // Responsive sizing hint
     widths = DEFAULT_WIDTHS, // Available widths
+    objectFit = 'cover', // Explicit object fit prop
 }) => {
     const [isLoaded, setIsLoaded] = useState(false);
     const [hasError, setHasError] = useState(false);
@@ -135,9 +136,8 @@ const OptimizedImage = ({
                         setHasError(true);
                         setIsLoaded(true);
                     }}
-                    className={`w-full h-full object-cover transition-opacity duration-500 ${
-                        isLoaded ? 'opacity-100' : 'opacity-0'
-                    } ${imgClassName}`}
+                    className={`w-full h-full transition-opacity duration-500 ${objectFit === 'contain' ? 'object-contain' : 'object-cover'
+                        } ${isLoaded ? 'opacity-100' : 'opacity-0'} ${imgClassName}`}
                     data-full-src={fullSrc || src}
                 />
             </picture>

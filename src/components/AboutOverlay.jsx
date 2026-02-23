@@ -22,15 +22,38 @@ const AboutOverlay = ({ onClose }) => {
     setTimeout(onClose, 500);
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' || e.key === 'Backspace') {
+        e.preventDefault();
+        handleClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   return (
     <div
       ref={trapRef}
       role="dialog"
       aria-modal="true"
       aria-label="About"
-      className={`fixed inset-0 z-[100] bg-[#121212] text-white overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.76,0,0.24,1)]
+      className={`fixed inset-0 z-[100] bg-[#121212] text-white overflow-y-auto scrollbar-hidden transition-opacity duration-500 ease-[cubic-bezier(0.76,0,0.24,1)]
       ${visible ? 'opacity-100' : 'opacity-0'}`}
     >
+      {/* Background Image */}
+      <div
+        className="fixed inset-0 pointer-events-none z-0"
+        style={{
+          backgroundImage: `url('${about.background || '/background.png'}')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          opacity: 0.06
+        }}
+      />
+
       {/* Close Button */}
       <button
         onClick={handleClose}
@@ -41,9 +64,9 @@ const AboutOverlay = ({ onClose }) => {
       </button>
 
       {/* Content */}
-      <div className="min-h-screen flex flex-col md:flex-row">
+      <div className="min-h-screen flex flex-col md:flex-row relative z-10">
         {/* Portrait Side */}
-        <div className={`w-full md:w-1/2 h-[50vh] md:h-screen relative overflow-hidden transition-all duration-1000 delay-100 ${visible ? 'opacity-100' : 'opacity-0'}`}>
+        <div className={`w-full md:w-1/2 h-[50vh] md:h-screen relative overflow-hidden transition-opacity duration-1000 delay-100 ${visible ? 'opacity-100' : 'opacity-0'}`}>
           <OptimizedImage
             src={about.portrait}
             alt="Photographer portrait"
@@ -55,8 +78,8 @@ const AboutOverlay = ({ onClose }) => {
         </div>
 
         {/* Bio Side */}
-        <div className={`w-full md:w-1/2 flex items-center justify-center p-8 md:p-16 transition-all duration-1000 delay-300 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-          <div className="max-w-lg">
+        <div className="w-full md:w-1/2 flex items-center justify-center p-8 md:p-16">
+          <div className={`max-w-lg transition duration-1000 delay-300 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             <span className="text-xs font-mono tracking-[0.3em] text-crimson uppercase mb-6 block">
               About
             </span>

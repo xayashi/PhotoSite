@@ -13,7 +13,7 @@ export function useFocusTrap(active = true) {
 
     // Focus first focusable element
     const focusable = ref.current.querySelectorAll(FOCUSABLE);
-    if (focusable.length) focusable[0].focus();
+    if (focusable.length) focusable[0].focus({ preventScroll: true });
 
     const handleKeyDown = (e) => {
       if (e.key !== 'Tab') return;
@@ -36,7 +36,7 @@ export function useFocusTrap(active = true) {
     document.addEventListener('keydown', handleKeyDown);
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
-      previousFocus.current?.focus();
+      previousFocus.current?.focus({ preventScroll: true });
     };
   }, [active]);
 

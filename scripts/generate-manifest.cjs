@@ -27,7 +27,7 @@ function parseFrontmatter(markdown) {
     }
     // Handle quoted strings
     else if ((value.startsWith('"') && value.endsWith('"')) ||
-             (value.startsWith("'") && value.endsWith("'"))) {
+      (value.startsWith("'") && value.endsWith("'"))) {
       value = value.slice(1, -1);
     }
 
@@ -79,6 +79,7 @@ function main() {
       chapter: frontmatter.chapter || 'Uncategorized',
       description: frontmatter.description || '',
       tags: Array.isArray(frontmatter.tags) ? frontmatter.tags : [],
+      quote: frontmatter.quote || '',
       background: resolvePath(frontmatter.background, basePath),
     });
   }

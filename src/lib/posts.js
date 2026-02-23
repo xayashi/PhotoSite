@@ -95,9 +95,15 @@ function parseCustomBlocks(content) {
         // Inside a block
         if (currentBlock) {
             if (currentBlock.type === 'gallery') {
-                const imgPath = line.trim();
-                if (imgPath) {
-                    currentBlock.images.push(imgPath);
+                const lineContent = line.trim();
+                if (lineContent) {
+                    const parts = lineContent.split('|').map(s => s.trim());
+                    const obj = { src: parts[0] };
+                    if (parts.length > 1 && parts[1]) obj.caption = parts[1];
+                    if (parts.length > 2 && parts[2]) obj.camera = parts[2];
+                    if (parts.length > 3 && parts[3]) obj.lens = parts[3];
+                    if (parts.length > 4 && parts[4]) obj.settings = parts[4];
+                    currentBlock.images.push(obj);
                 }
             } else if (currentBlock.type === 'youtube-pending') {
                 const videoId = line.trim();
@@ -126,16 +132,24 @@ async function processBlocks(blocks, basePath) {
 
     return blocks.map(block => {
         if (block.type === 'markdown') {
-            const html = marked.parse(block.content);
+            let html = marked.parse(block.content);
+            // Fix relative image paths
+            html = html.replace(/<img[^>]+src="([^"]+)"/g, (match, src) => {
+                if (!src.startsWith('/') && !src.startsWith('http')) {
+                    return match.replace(`src="${src}"`, `src="${basePath}/${src}"`);
+                }
+                return match;
+            });
             return { type: 'html', content: html };
         }
 
         if (block.type === 'gallery') {
-            const images = block.images.map(img => {
-                if (img.startsWith('/') || img.startsWith('http')) {
-                    return img;
+            const images = block.images.map(imgObj => {
+                let finalSrc = imgObj.src;
+                if (!finalSrc.startsWith('/') && !finalSrc.startsWith('http')) {
+                    finalSrc = `${basePath}/${finalSrc}`;
                 }
-                return `${basePath}/${img}`;
+                return { ...imgObj, src: finalSrc };
             });
             return { type: 'gallery', images };
         }
@@ -176,7 +190,50 @@ export async function loadPostContent(slug, basePath) {
         const markdown = await response.text();
         const { content } = parseFrontmatter(markdown);
         const blocks = parseCustomBlocks(content);
-        return await processBlocks(blocks, basePath);
+        const processedBlocks = await processBlocks(blocks, basePath);
+
+        let exifData = {};
+        try {
+            const exifResp = await fetch(`${basePath}/exif.json`);
+            if (exifResp.ok) {
+                exifData = await exifResp.json();
+            }
+        } catch (e) {
+            // ignore missing exif
+        }
+
+        // Merge EXIF data
+        for (const block of processedBlocks) {
+            if (block.type === 'gallery') {
+                for (const img of block.images) {
+                    const originalFilename = img.src.split('/').pop();
+                    const autoExif = exifData[originalFilename];
+                    const hasManual = img.camera || img.lens || img.settings;
+
+                    if (autoExif || hasManual) {
+                        img.exif = { ...(autoExif || {}) };
+                        if (img.camera) img.exif.camera = img.camera;
+                        if (img.lens) img.exif.lens = img.lens;
+                        if (img.settings) img.exif.settings = img.settings;
+                    }
+                }
+            } else if (block.type === 'html') {
+                // Inject data-exif into standalone img tags
+                block.content = block.content.replace(/(<img[^>]+src="([^"]+)")/g, (match, prefix, src) => {
+                    const originalFilename = src.split('/').pop();
+                    const autoExif = exifData[originalFilename];
+                    if (autoExif) {
+                        try {
+                            const exifStr = JSON.stringify(autoExif).replace(/'/g, "&apos;").replace(/"/g, "&quot;");
+                            return `${match} data-exif='${exifStr}'`;
+                        } catch (e) { }
+                    }
+                    return match;
+                });
+            }
+        }
+
+        return processedBlocks;
     } catch (e) {
         console.error(`Failed to load content for ${slug}:`, e);
         return null;

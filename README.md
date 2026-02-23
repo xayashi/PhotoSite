@@ -84,6 +84,11 @@ public/
   images/              — Static images
 ```
 
+## Documentation
+
+- [`CONTENT_GUIDE.md`](CONTENT_GUIDE.md) — Full authoring instructions for markdown posts
+- [`docs/TERMINOLOGY.md`](docs/TERMINOLOGY.md) — Established terminologies for pages, UI elements, and architectural concepts
+
 ## Content
 
 Projects can be added two ways:

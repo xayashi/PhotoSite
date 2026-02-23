@@ -109,9 +109,14 @@ test.describe('Performance and Visual Verification', () => {
         await firstCard.click();
         await page.waitForTimeout(200);
 
-        // Click the VIEW button
+        // If VIEW button is visible, click it (mobile fallback)
         const viewButton = page.locator('text=VIEW').first();
-        await viewButton.click();
+        try {
+            await viewButton.waitFor({ state: 'visible', timeout: 500 });
+            await viewButton.click({ force: true });
+        } catch (e) {
+            // Expected on desktop
+        }
         await page.waitForTimeout(800);
 
         // Check the project detail dialog
@@ -128,12 +133,18 @@ test.describe('Performance and Visual Verification', () => {
         await page.goto('/');
         await page.waitForTimeout(500);
 
-        // Click first card then VIEW
+        // Click first card
         const firstCard = page.locator('[data-card]').first();
         await firstCard.click();
         await page.waitForTimeout(200);
+
         const viewButton = page.locator('text=VIEW').first();
-        await viewButton.click();
+        try {
+            await viewButton.waitFor({ state: 'visible', timeout: 500 });
+            await viewButton.click({ force: true });
+        } catch (e) {
+            // Expected on desktop or if it doesn't appear
+        }
 
         const start = Date.now();
 

@@ -13,18 +13,19 @@ test.describe('Navigation & Routing', () => {
         expect(count).toBeGreaterThanOrEqual(5);
     });
 
-    test('clicking a card focuses it, then VIEW opens project detail', async ({ page }) => {
+    test('clicking a card opens project detail directly on desktop (or via VIEW on touch)', async ({ page }) => {
         await page.goto('/');
 
         const firstCard = page.locator('[data-card]').first();
         await firstCard.click();
 
-        // VIEW button should appear
+        // Check if VIEW button appears (mobile mode).
+        // Since it's animated, we wait briefly.
+        await page.waitForTimeout(500);
         const viewButton = firstCard.locator('text=VIEW');
-        await expect(viewButton).toBeVisible();
-
-        // Click VIEW to navigate
-        await viewButton.click();
+        if (await viewButton.isVisible()) {
+            await viewButton.click({ force: true });
+        }
 
         // URL should change to /project/<slug>
         await expect(page).toHaveURL(/\/project\/.+/);

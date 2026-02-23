@@ -3,7 +3,7 @@ import { X, Mail, Instagram, Twitter, Linkedin, ExternalLink } from 'lucide-reac
 import { siteConfig } from '../config';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
-import BonsaiAnimation from './BonsaiAnimation';
+import ContactBonsai from './ContactBonsai';
 
 const ContactOverlay = ({ onClose }) => {
   const [visible, setVisible] = useState(false);
@@ -19,6 +19,17 @@ const ContactOverlay = ({ onClose }) => {
     setVisible(false);
     setTimeout(onClose, 500);
   };
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' || e.key === 'Backspace') {
+        e.preventDefault();
+        handleClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Filter out empty social links
   const activeSocials = Object.entries(social).filter(([_, url]) => url);
@@ -37,9 +48,21 @@ const ContactOverlay = ({ onClose }) => {
       role="dialog"
       aria-modal="true"
       aria-label="Contact"
-      className={`fixed inset-0 z-[100] bg-[#121212] text-white overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.76,0,0.24,1)]
+      className={`fixed inset-0 z-[100] bg-[#121212] text-white overflow-hidden transition-opacity duration-500 ease-[cubic-bezier(0.76,0,0.24,1)]
       ${visible ? 'opacity-100' : 'opacity-0'}`}
     >
+      {/* Background Image */}
+      <div
+        className="fixed inset-0 pointer-events-none z-0"
+        style={{
+          backgroundImage: `url('${siteConfig.contact?.background || '/background.png'}')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          opacity: 0.06
+        }}
+      />
+
       {/* Close Button */}
       <button
         onClick={handleClose}
@@ -50,8 +73,8 @@ const ContactOverlay = ({ onClose }) => {
       </button>
 
       {/* Content */}
-      <div className="min-h-screen flex items-center justify-center p-8">
-        <div className={`text-center transition-all duration-1000 delay-100 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+      <div className="min-h-screen flex items-center justify-center p-8 relative z-10">
+        <div className={`text-center transition duration-1000 delay-100 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <span className="text-xs font-mono tracking-[0.3em] text-crimson uppercase mb-8 block">
             Get in Touch
           </span>
@@ -75,7 +98,7 @@ const ContactOverlay = ({ onClose }) => {
 
           {/* Social Links */}
           {activeSocials.length > 0 && (
-            <div className={`flex justify-center gap-6 transition-all duration-1000 delay-300 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            <div className={`flex justify-center gap-6 transition duration-1000 delay-300 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
               {activeSocials.map(([platform, url]) => {
                 const Icon = socialIcons[platform] || ExternalLink;
                 return (
@@ -100,16 +123,16 @@ const ContactOverlay = ({ onClose }) => {
 
           {/* Bonsai — mobile (below social links) */}
           <div className={`mt-12 md:hidden transition-opacity duration-1000 delay-500 ${visible ? 'opacity-100' : 'opacity-0'}`}>
-            <BonsaiAnimation visible={visible} className="w-28 h-40 mx-auto" delayOffset={0.5} />
+            <ContactBonsai visible={visible} className="w-28 h-40 mx-auto" delayOffset={0.5} />
           </div>
         </div>
       </div>
 
       {/* Bonsai — desktop (center-bottom decorative) */}
-      <BonsaiAnimation visible={visible} className="absolute bottom-24 left-1/2 -translate-x-1/2 w-44 h-60 hidden md:block" />
+      <ContactBonsai visible={visible} className="absolute bottom-24 left-1/2 -translate-x-1/2 w-44 h-60 hidden md:block z-10" />
 
       {/* Footer Text */}
-      <div className="absolute bottom-8 left-0 right-0 flex flex-col items-center gap-2">
+      <div className="absolute bottom-8 left-0 right-0 flex flex-col items-center gap-2 z-10">
         <img
           src="/logo.png"
           alt="Logo"

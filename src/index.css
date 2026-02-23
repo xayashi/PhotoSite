@@ -315,8 +315,13 @@ body::after {
    Bonsai Tree Drawing Animation (Contact Page)
    ============================================ */
 @keyframes bonsaiDraw {
-  from { stroke-dashoffset: 1; }
-  to { stroke-dashoffset: 0; }
+  from {
+    stroke-dashoffset: 1;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
 }
 
 @keyframes bonsaiBloom {
@@ -324,10 +329,12 @@ body::after {
     opacity: 0;
     transform: scale(0);
   }
+
   60% {
     opacity: 0.8;
     transform: scale(1.3);
   }
+
   100% {
     opacity: 0.6;
     transform: scale(1);
@@ -354,18 +361,44 @@ body::after {
   animation: bonsaiBloom 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
 }
 
+@keyframes petalFall {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) rotate(0deg) scale(0.5);
+  }
+
+  15% {
+    opacity: 0.85;
+  }
+
+  75% {
+    opacity: 0.85;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(25px, 140px) rotate(220deg) scale(1);
+  }
+}
+
+.bonsai-fall {
+  animation: petalFall linear infinite;
+  opacity: 0;
+  transform-origin: center;
+}
+
 /* ============================================
    Accessibility
    ============================================ */
 
-/* Focus ring for keyboard navigation */
-:focus-visible {
+/* Only show focus ring when actively tabbing */
+.user-is-tabbing :focus {
   outline: 2px solid #C41E3A;
   outline-offset: 2px;
 }
 
-/* Remove outline for mouse/touch clicks */
-:focus:not(:focus-visible) {
+/* Remove default focus everywhere to be safe */
+:focus {
   outline: none;
 }
 
@@ -604,7 +637,7 @@ body::after {
      Use :first-child to target only the OptimizedImage wrapper,
      NOT the VIEW overlay (which needs its semi-transparent bg-black/40). */
   [data-card] .image-container,
-  [data-card] .card-hover > div:first-child {
+  [data-card] .card-hover>div:first-child {
     aspect-ratio: 4/5;
     background-color: #121212;
   }
@@ -620,4 +653,32 @@ body::after {
     animation: none;
     background: rgba(255, 255, 255, 0.05);
   }
+}
+
+/* ============================================
+   UX IMPROVEMENTS - Scroll Indicator Animation
+   ============================================ */
+@keyframes scrollLine {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  80% {
+    transform: translateY(200%);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateY(200%);
+    opacity: 0;
+  }
+}
+
+.animate-scroll-line {
+  animation: scrollLine 2s cubic-bezier(0.65, 0, 0.35, 1) infinite;
 }

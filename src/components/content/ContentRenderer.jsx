@@ -21,7 +21,7 @@ const ContentRenderer = ({ blocks, onImageClick }) => {
                             <ContentHTML
                                 key={index}
                                 content={block.content}
-                                onImageClick={(src) => onImageClick?.(src)}
+                                onImageClick={(data) => onImageClick?.(data)}
                             />
                         );
 
@@ -30,7 +30,7 @@ const ContentRenderer = ({ blocks, onImageClick }) => {
                             <ContentGallery
                                 key={index}
                                 images={block.images}
-                                onImageClick={(src) => onImageClick?.(src)}
+                                onImageClick={(data) => onImageClick?.(data)}
                             />
                         );
 

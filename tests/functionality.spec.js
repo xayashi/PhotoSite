@@ -193,13 +193,7 @@ test.describe('Functionality', () => {
 
     test.describe('Landing Page', () => {
 
-        test('progress bar exists', async ({ page }) => {
-            await page.goto('/');
-
-            // The progress bar is rendered via ref — check it exists in the DOM
-            // It's a scaleX-based bar at the bottom
-            await expect(page.locator('[data-scroll-container]')).toBeVisible();
-        });
+        // Removed 'progress bar exists' test because the progress bar was removed based on feedback
 
         test('scroll hint visible on desktop', async ({ page }) => {
             await page.goto('/');

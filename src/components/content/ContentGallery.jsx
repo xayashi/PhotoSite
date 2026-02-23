@@ -18,18 +18,18 @@ const ContentGallery = ({ images, onImageClick }) => {
 
     return (
         <ul className={`grid ${getGridClass()} gap-4 max-w-6xl mx-auto px-4 list-none`}>
-            {images.map((src, index) => (
+            {images.map((image, index) => (
                 <li
                     key={index}
                     className="relative overflow-hidden rounded-sm shadow-lg cursor-pointer group aspect-[4/3]"
                 >
                     <OptimizedImage
-                        src={src}
-                        fullSrc={src}
+                        src={image.src}
+                        fullSrc={image.src}
                         width={640}
                         quality={80}
-                        alt={`Gallery image ${index + 1}`}
-                        onClick={() => onImageClick?.(src, index)}
+                        alt={image.caption || `Gallery image ${index + 1}`}
+                        onClick={() => onImageClick?.(image, index)}
                         className="w-full h-full"
                         sizes="(max-width: 768px) 50vw, 33vw"
                         widths={[640, 828, 1080]}

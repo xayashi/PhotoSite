@@ -78,9 +78,9 @@ const LandingCard = memo(({
       </div>
 
       {/* Typography with animated title */}
-      <div className={`absolute -bottom-16 left-0 transition-all duration-500 ${isFocused ? 'translate-y-4 opacity-100' : 'opacity-60'}`}>
-        <p className="text-xs text-white/60 mb-1 font-mono">{item.subtitle}</p>
-        <h2 className="text-3xl sm:text-4xl md:text-7xl font-serif text-transparent stroke-text">
+      <div className={`absolute -bottom-16 left-0 transition-all duration-500 ${isFocused ? 'translate-y-4 opacity-100' : (isHovered ? 'opacity-100' : 'opacity-70')}`}>
+        <p className={`text-xs mb-1 font-mono transition-colors duration-500 ${isFocused || isHovered ? 'text-white' : 'text-white/70'}`}>{item.subtitle}</p>
+        <h2 className="text-3xl sm:text-4xl md:text-7xl font-serif text-transparent stroke-text whitespace-nowrap">
           <AnimatedTitle
             text={item.title}
             isVisible={isLoaded}
@@ -90,7 +90,7 @@ const LandingCard = memo(({
       </div>
 
       {/* Background Number */}
-      <div className="absolute -top-32 -left-10 text-[10rem] font-bold text-white/5 z-10 select-none font-serif pointer-events-none">
+      <div className={`absolute -top-32 -left-10 text-[10rem] font-bold transition-colors duration-500 z-10 select-none font-serif md:pointer-events-none ${isFocused || isHovered ? 'text-white/30' : 'text-white/10'}`}>
         {String(index + 1).padStart(2, '0')}
       </div>
     </div>

@@ -39,7 +39,78 @@ const ProjectDetail = ({ project, onClose }) => {
   const getImageSrc = (image) => typeof image === 'string' ? image : image.src;
 
   // Lightbox handlers
-  const openLightbox = (src) => setLightboxImage(src);
+  // Markdown lightbox navigation
+  const markdownImages = isMarkdownPost && contentBlocks
+    ? contentBlocks.flatMap(b => {
+      if (b.type === 'gallery') return b.images;
+      if (b.type === 'html') {
+        const imgRegex = /<img[^>]+src="([^"]+)"[^>]*>/g;
+        const images = [];
+        let match;
+        while ((match = imgRegex.exec(b.content)) !== null) {
+          const fullMatch = match[0];
+          const src = match[1];
+          // Extract alt as caption
+          const altMatch = fullMatch.match(/alt="([^"]*)"/);
+          let caption = null;
+          let manualExif = null;
+
+          if (altMatch && altMatch[1]) {
+            const parts = altMatch[1].split('|').map(s => s.trim());
+            caption = parts[0];
+            if (parts.length > 1) {
+              manualExif = {};
+              if (parts[1]) manualExif.camera = parts[1];
+              if (parts[2]) manualExif.lens = parts[2];
+              if (parts[3]) manualExif.settings = parts[3];
+            }
+          }
+
+          // Extract auto EXIF if attached via data-exif
+          let autoExif = null;
+          const exifMatch = fullMatch.match(/data-exif='([^']*)'/);
+          if (exifMatch) {
+            try {
+              autoExif = JSON.parse(exifMatch[1].replace(/&apos;/g, "'").replace(/&quot;/g, '"'));
+            } catch (e) { }
+          }
+
+          // Merge EXIF
+          let finalExif = null;
+          if (autoExif || manualExif) {
+            finalExif = { ...(autoExif || {}) };
+            if (manualExif?.camera) finalExif.camera = manualExif.camera;
+            if (manualExif?.lens) finalExif.lens = manualExif.lens;
+            if (manualExif?.settings) finalExif.settings = manualExif.settings;
+          }
+
+          images.push({ src, caption, exif: finalExif });
+        }
+        return images;
+      }
+      return [];
+    })
+    : [];
+
+  const getMarkdownImageIndex = (data) => {
+    const targetSrc = typeof data === 'string' ? data : data.src;
+    return markdownImages.findIndex(img => {
+      const imgSrc = typeof img === 'string' ? img : img.src;
+      // Handle potential absolute URL vs relative URL issues
+      return imgSrc === targetSrc || targetSrc.endsWith(imgSrc) || imgSrc.endsWith(targetSrc);
+    });
+  };
+
+  const openLightbox = (data) => {
+    const index = getMarkdownImageIndex(data);
+    if (index !== -1) {
+      setLightboxIndex(index);
+      setLightboxImage(markdownImages[index]); // Push the rich object (with EXIF) rather than raw string
+    } else {
+      setLightboxImage(data);
+      setLightboxIndex(null);
+    }
+  };
   const closeLightbox = () => {
     setLightboxImage(null);
     setLightboxIndex(null);
@@ -181,9 +252,10 @@ const ProjectDetail = ({ project, onClose }) => {
             </div>
 
             {/* Scroll indicator */}
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/60">
-              <span className="text-xs uppercase tracking-widest">Scroll</span>
-              <div className="w-px h-8 bg-white/40"></div>
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-60">
+              <div className="w-px h-12 relative overflow-hidden bg-white/20">
+                <div className="w-full h-[40%] bg-white absolute top-0 left-0 animate-scroll-line"></div>
+              </div>
             </div>
           </div>
 
@@ -246,7 +318,7 @@ const ProjectDetail = ({ project, onClose }) => {
           {/* FINAL SECTION: Quote — height accounts for footer so quote centers in viewport at bottom */}
           <div className="min-h-[calc(100vh-15rem)] md:min-h-[calc(100vh-18rem)] flex items-center justify-center px-8 py-24">
             <p className="font-serif italic text-xl md:text-2xl text-stone-500 text-center max-w-lg">
-              "The camera is an instrument that teaches people how to see without a camera."
+              "{project.quote || 'The camera is an instrument that teaches a higher level of awareness for our surroundings.'}"
             </p>
           </div>
 
@@ -278,19 +350,37 @@ const ProjectDetail = ({ project, onClose }) => {
       </div>
 
 
-      {/* Lightbox for markdown posts - single image (Portal-based) */}
+      {/* Lightbox for markdown posts */}
       {
-        lightboxImage && (
+        lightboxImage && isMarkdownPost && (
           <Lightbox
             image={lightboxImage}
             onClose={closeLightbox}
+            onPrev={() => {
+              const newIndex = Math.max(0, lightboxIndex - 1);
+              if (markdownImages[newIndex]) {
+                setLightboxIndex(newIndex);
+                setLightboxImage(markdownImages[newIndex]);
+              }
+            }}
+            onNext={() => {
+              const newIndex = Math.min(markdownImages.length - 1, lightboxIndex + 1);
+              if (markdownImages[newIndex]) {
+                setLightboxIndex(newIndex);
+                setLightboxImage(markdownImages[newIndex]);
+              }
+            }}
+            hasPrev={lightboxIndex !== null && lightboxIndex > 0}
+            hasNext={lightboxIndex !== null && lightboxIndex < markdownImages.length - 1}
+            prevImageSrc={lightboxIndex > 0 ? getImageSrc(markdownImages[lightboxIndex - 1]) : null}
+            nextImageSrc={lightboxIndex !== null && lightboxIndex < markdownImages.length - 1 ? getImageSrc(markdownImages[lightboxIndex + 1]) : null}
           />
         )
       }
 
       {/* Lightbox for legacy posts (Portal-based) */}
       {
-        lightboxIndex !== null && legacyImages.length > 0 && (
+        lightboxIndex !== null && !isMarkdownPost && legacyImages.length > 0 && (
           <Lightbox
             image={legacyImages[lightboxIndex]}
             onClose={closeLightbox}
@@ -298,6 +388,8 @@ const ProjectDetail = ({ project, onClose }) => {
             onNext={nextImage}
             hasPrev={lightboxIndex > 0}
             hasNext={lightboxIndex < legacyImages.length - 1}
+            prevImageSrc={lightboxIndex > 0 ? getImageSrc(legacyImages[lightboxIndex - 1]) : null}
+            nextImageSrc={lightboxIndex < legacyImages.length - 1 ? getImageSrc(legacyImages[lightboxIndex + 1]) : null}
           />
         )
       }

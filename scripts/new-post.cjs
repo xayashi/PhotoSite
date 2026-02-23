@@ -92,9 +92,59 @@ function rawCopy(srcPath, destPath) {
   fs.copyFileSync(srcPath, destPath);
 }
 
+// ── EXIF extraction ──────────────────────────────────────────
+
+async function extractExif(imagePath) {
+  let exifr;
+  try {
+    exifr = require('exifr');
+  } catch {
+    return null;
+  }
+
+  try {
+    const tags = ['Make', 'Model', 'LensMake', 'LensModel', 'FNumber', 'ExposureTime', 'ISO', 'PhotographicSensitivity'];
+    const data = await exifr.parse(imagePath, tags);
+    if (!data) return null;
+
+    const exif = {};
+
+    if (data.Make || data.Model) {
+      exif.camera = [data.Make, data.Model].filter(Boolean).join(' ');
+      if (data.Make && data.Model && data.Model.toLowerCase().startsWith(data.Make.toLowerCase())) {
+        exif.camera = data.Model;
+      }
+    }
+
+    if (data.LensMake || data.LensModel) {
+      exif.lens = [data.LensMake, data.LensModel].filter(Boolean).join(' ');
+      if (data.LensMake && data.LensModel && data.LensModel.toLowerCase().startsWith(data.LensMake.toLowerCase())) {
+        exif.lens = data.LensModel;
+      }
+    }
+
+    const iso = data.ISO || data.PhotographicSensitivity;
+    const settings = [];
+    if (data.FNumber) settings.push(`f/${data.FNumber}`);
+    if (data.ExposureTime) {
+      const exp = data.ExposureTime >= 1 ? data.ExposureTime : `1/${Math.round(1 / data.ExposureTime)}`;
+      settings.push(`${exp}s`);
+    }
+    if (iso) settings.push(`ISO ${iso}`);
+
+    if (settings.length > 0) {
+      exif.settings = settings.join(' ');
+    }
+
+    return Object.keys(exif).length > 0 ? exif : null;
+  } catch (err) {
+    return null; // Ignore errors like no EXIF data, or unsupported formats
+  }
+}
+
 // ── Generate index.md ───────────────────────────────────────
 
-function generateMarkdown({ title, subtitle, date, cover, chapter, description, galleryFiles }) {
+function generateMarkdown({ title, subtitle, date, cover, chapter, description, quote, tags, galleryFiles }) {
   const lines = [
     '---',
     `title: ${title}`,
@@ -105,6 +155,10 @@ function generateMarkdown({ title, subtitle, date, cover, chapter, description, 
   lines.push(`cover: ${cover}`);
   if (chapter) lines.push(`chapter: ${chapter}`);
   if (description) lines.push(`description: ${description}`);
+  if (quote) lines.push(`quote: ${quote}`);
+  if (tags && tags.length > 0) {
+    lines.push(`tags: [${tags.join(', ')}]`);
+  }
   lines.push('---');
   lines.push('');
 
@@ -186,6 +240,13 @@ async function main() {
   // ── Description ──
   const description = (await ask('  Description: ')).trim();
 
+  // ── Quote ──
+  const quote = (await ask('  Quote (optional): ')).trim();
+
+  // ── Tags ──
+  const tagsInput = (await ask('  Tags (comma-separated, optional): ')).trim();
+  const tags = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(Boolean) : [];
+
   console.log();
 
   // ── Cover image ──
@@ -262,10 +323,15 @@ async function main() {
   postDir = path.join(POSTS_DIR, slug);
   fs.mkdirSync(postDir, { recursive: true });
 
+  const exifData = {};
+
   // ── Copy images ──
   let imageCount = 0;
 
   if (coverSrc) {
+    const extData = await extractExif(coverSrc);
+    if (extData) exifData[coverFilename] = extData;
+
     const dest = path.join(postDir, coverFilename);
     if (optimize) {
       await optimizeAndCopy(coverSrc, dest);
@@ -277,6 +343,9 @@ async function main() {
   }
 
   for (let i = 0; i < gallerySrcs.length; i++) {
+    const extData = await extractExif(gallerySrcs[i]);
+    if (extData) exifData[galleryFilenames[i]] = extData;
+
     const dest = path.join(postDir, galleryFilenames[i]);
     if (optimize) {
       await optimizeAndCopy(gallerySrcs[i], dest);
@@ -295,11 +364,18 @@ async function main() {
     cover: coverFilename || 'cover.jpg',
     chapter,
     description,
+    quote,
+    tags,
     galleryFiles: galleryFilenames,
   });
 
   fs.writeFileSync(path.join(postDir, 'index.md'), markdown, 'utf-8');
   console.log(`  Created: public/content/posts/${slug}/index.md`);
+
+  if (Object.keys(exifData).length > 0) {
+    fs.writeFileSync(path.join(postDir, 'exif.json'), JSON.stringify(exifData, null, 2), 'utf-8');
+    console.log(`  Extracted EXIF data for ${Object.keys(exifData).length} image(s)`);
+  }
 
   // ── Done ──
   console.log();

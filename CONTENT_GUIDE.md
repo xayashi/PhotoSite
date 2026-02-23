@@ -54,6 +54,12 @@ chapter: Season One
 | `chapter` | ✅ Yes | Chapter name for archive grouping |
 | `tags` | ❌ No | Optional tags: `[travel, nature]` |
 
+**Recommended Tags:**
+To keep the archive organized and easy to navigate with the filter buttons and search bar, try to pick from these broad, applicable tags when possible:
+- **Photography:** `portrait`, `landscape`, `street`, `film`, `digital`, `editorial`
+- **Themes/Mood:** `minimal`, `nature`, `urban`, `architecture`, `night`, `abstract`
+- **Location/Travel:** `tokyo`, `midwest`, `travel`, `local`
+
 ---
 
 ## Content Types
