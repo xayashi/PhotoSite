@@ -31,9 +31,8 @@ export const siteConfig = {
 
   // About section content
   about: {
-    headline: "My memories.",
-    bio: `Welcome to my fun little project.
-    \n
+    headline: "Welcome",
+    bio: `
     I've always loved documenting and sharing my life, but I've never really had a place to share my experiences exactly how I wanted to - so I came up with this.
     \n
     In all of these posts, I do my best to write my true thoughts and feelings.

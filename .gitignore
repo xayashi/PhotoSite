@@ -39,3 +39,7 @@ compare-audits.cjs
 
 # Test artifacts
 test-results/
+test_output.txt
+test_results.txt
+report.json
+parse.js
