@@ -286,9 +286,18 @@ export default function App() {
     };
   }, [landingProjects.length]);
 
+  const touchDeviceRef = useRef(false);
+
+  useEffect(() => {
+    const handleTouch = () => { touchDeviceRef.current = true; };
+    window.addEventListener('touchstart', handleTouch, { once: true });
+    return () => window.removeEventListener('touchstart', handleTouch);
+  }, []);
+
   const handleCardClick = useCallback((id) => {
-    // Differentiate touch vs mouse. If hover is supported, we can navigate directly.
-    const hasHover = window.matchMedia('(hover: hover)').matches;
+    // Rely on true multi-input detection rather than purely hover media queries (which some androids fake)
+    const hasHover = window.matchMedia('(hover: hover)').matches && !touchDeviceRef.current;
+
     if (hasHover) {
       const project = landingProjects.find(p => p.id === id);
       if (project) {

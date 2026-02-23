@@ -30,6 +30,33 @@ const Lightbox = ({ image, onClose, onPrev, onNext, hasPrev, hasNext, prevImageS
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose, onPrev, onNext, hasPrev, hasNext]);
 
+  // Stabilize onClose for history event listener
+  const onCloseRef = React.useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  // Handle mobile back button
+  useEffect(() => {
+    // Push a dummy state into the history stack when the lightbox opens
+    window.history.pushState({ lightbox: true }, '');
+
+    const handlePopState = () => {
+      // If the back button is pressed, close the lightbox instead of navigating away
+      onCloseRef.current();
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      // If unmounted via UI (e.g. clicking 'X'), manually pop the dummy state to keep history clean
+      if (window.history.state?.lightbox) {
+        window.history.back();
+      }
+    };
+  }, []);
+
   // Normalize image data (support both string URLs and objects)
   const src = typeof image === 'string' ? image : image.src;
   const caption = typeof image === 'string' ? null : image.caption;
@@ -58,19 +85,19 @@ const Lightbox = ({ image, onClose, onPrev, onNext, hasPrev, hasNext, prevImageS
       {hasPrev && (
         <button
           aria-label="Previous image"
-          className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors p-2"
+          className="absolute left-2 md:left-8 top-1/2 -translate-y-1/2 text-white/70 hover:text-white bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full transition-all p-2 md:p-3 z-50"
           onClick={(e) => { e.stopPropagation(); onPrev(); }}
         >
-          <ChevronLeft className="w-8 h-8 md:w-12 md:h-12" />
+          <ChevronLeft className="w-6 h-6 md:w-10 md:h-10" />
         </button>
       )}
       {hasNext && (
         <button
           aria-label="Next image"
-          className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors p-2"
+          className="absolute right-2 md:right-8 top-1/2 -translate-y-1/2 text-white/70 hover:text-white bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full transition-all p-2 md:p-3 z-50"
           onClick={(e) => { e.stopPropagation(); onNext(); }}
         >
-          <ChevronRight className="w-8 h-8 md:w-12 md:h-12" />
+          <ChevronRight className="w-6 h-6 md:w-10 md:h-10" />
         </button>
       )}
 
