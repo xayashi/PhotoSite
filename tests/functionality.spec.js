@@ -50,18 +50,24 @@ test.describe('Functionality', () => {
             await page.goto('/archive');
             await expect(page).toHaveTitle('Archive — 林');
 
-            await page.goto('/project/mono');
-            await expect(page).toHaveTitle('Mono — 林');
+            await page.goto('/project/yuki');
+            await expect(page).toHaveTitle('Yuki — 林');
         });
     });
 
     test.describe('Share Button', () => {
 
-        test('share button copies link on desktop (clipboard fallback)', async ({ page, context }) => {
-            // Grant clipboard permissions
-            await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+        test('share button copies link on desktop (clipboard fallback)', async ({ page }) => {
+            // Exercise the clipboard fallback without relying on the OS clipboard.
+            await page.addInitScript(() => {
+                Object.defineProperty(navigator, 'share', { value: undefined, configurable: true });
+                Object.defineProperty(navigator, 'clipboard', {
+                    value: { writeText: async (text) => { window.__copiedLink = text; } },
+                    configurable: true,
+                });
+            });
 
-            await page.goto('/project/mono');
+            await page.goto('/project/yuki');
             await expect(page.locator('[role="dialog"]')).toBeVisible();
 
             // Click share
@@ -72,42 +78,42 @@ test.describe('Functionality', () => {
             await expect(toast).toBeVisible();
 
             // Clipboard should contain the current URL
-            const clipboardText = await page.evaluate(() => navigator.clipboard.readText());
-            expect(clipboardText).toContain('/project/mono');
+            const clipboardText = await page.evaluate(() => window.__copiedLink);
+            expect(clipboardText).toContain('/project/yuki');
         });
     });
 
     test.describe('Project Detail', () => {
 
-        test('legacy project renders cover, title, description, and images', async ({ page }) => {
-            await page.goto('/project/mono');
+        test('Markdown project renders cover, title, description, and images', async ({ page }) => {
+            await page.goto('/project/yuki');
 
             const dialog = page.locator('[role="dialog"]');
             await expect(dialog).toBeVisible();
 
             // Hero title
-            await expect(dialog.locator('h1')).toContainText('Mono');
+            await expect(dialog.locator('h1')).toContainText('Yuki');
 
             // Subtitle (appears in both hero and footer, use first)
-            await expect(dialog.locator('text=Tokyo, 2024').first()).toBeVisible();
+            await expect(dialog.locator('text=February 2026').first()).toBeVisible();
 
             // Description section
-            await expect(dialog.locator('text=About the Series')).toBeVisible();
+            await expect(dialog.locator('text=After many underwhelming winters').first()).toBeVisible();
 
             // Gallery images should exist
-            const images = dialog.locator('.space-y-16 img, .space-y-24 img');
+            const images = dialog.locator('.content-html img, ul img');
             const count = await images.count();
             expect(count).toBeGreaterThan(0);
         });
 
-        test('legacy project lightbox opens on image click', async ({ page }) => {
-            await page.goto('/project/mono');
+        test('Markdown project lightbox opens on image click', async ({ page }) => {
+            await page.goto('/project/yuki');
 
             const dialog = page.locator('[role="dialog"]');
             await expect(dialog).toBeVisible();
 
             // Click first gallery image
-            const firstImage = dialog.locator('.space-y-16 .cursor-pointer, .space-y-24 .cursor-pointer').first();
+            const firstImage = dialog.locator('.content-html img').first();
             await firstImage.click();
 
             // Lightbox should appear (portal on body)
@@ -120,7 +126,7 @@ test.describe('Functionality', () => {
         });
 
         test('back to top button scrolls up', async ({ page }) => {
-            await page.goto('/project/lumina');
+            await page.goto('/project/yuki');
 
             const dialog = page.locator('[role="dialog"]');
             await expect(dialog).toBeVisible();

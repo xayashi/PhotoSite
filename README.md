@@ -1,6 +1,10 @@
-# PhotoSite
+# PhotoSite — Visual Storytelling
 
 A personal photography portfolio built as a creative alternative to Instagram. Each project card tells a visual story through a minimal, Japanese-influenced design.
+
+[View the live portfolio](https://photo-site-cyan.vercel.app/)
+
+<img src="public/content/posts/yuki/cover.jpg" alt="Featured photograph from the Yuki winter series" width="400" />
 
 ## Features
 
@@ -10,12 +14,12 @@ A personal photography portfolio built as a creative alternative to Instagram. E
 - Grayscale-to-color card reveal on hover
 - Lightbox with prev/next navigation for both legacy and markdown posts
 - Share button (Web Share API on mobile, clipboard on desktop)
-- Focus traps, ARIA attributes, keyboard navigation (WCAG compliant)
+- Focus traps, ARIA attributes, keyboard navigation
 - Dynamic document titles and Open Graph / Twitter Card meta tags
 - Code-split overlays via `React.lazy()` + vendor chunk splitting
 - Responsive images via `OptimizedImage` with srcset/sizes
 - Custom cursor (desktop), swipe hint (mobile)
-- 41 Playwright integration tests
+- Playwright integration coverage for navigation, accessibility, and interactions
 
 ## Tech Stack
 
@@ -35,7 +39,7 @@ git clone https://github.com/xayashi/PhotoSite.git
 cd PhotoSite
 
 # Install dependencies
-npm install
+npm ci
 
 # Start development server
 npm run dev
@@ -78,7 +82,7 @@ src/
   components/          — React components (overlays, cursor, image handling, content renderers)
 tests/                 — Playwright integration tests
 scripts/               — Manifest generation, post scaffolding, image optimization
-content/
+public/content/
   posts/               — Markdown posts with frontmatter
 public/
   images/              — Static images
@@ -101,3 +105,11 @@ See `CONTENT_GUIDE.md` for full authoring instructions.
 ## Deployment
 
 Deployed on [Vercel](https://vercel.com). Push to `main` to trigger automatic deployment. SPA rewrites configured in `vercel.json`.
+
+## Project scope
+
+A personal creative project by Kai Simpson. The site combines photography with frontend experiments in navigation, motion, and content presentation. Posts are authored in Markdown; there is no login or server-side CMS. Only trusted, owner-authored Markdown should be added.
+
+## Reuse
+
+The repository does not currently include a software license. Photographs and personal content are not offered as reusable stock assets; ask before reusing them.

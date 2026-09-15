@@ -38,20 +38,27 @@ const Lightbox = ({ image, onClose, onPrev, onNext, hasPrev, hasNext, prevImageS
 
   // Handle mobile back button
   useEffect(() => {
-    // Push a dummy state into the history stack when the lightbox opens
-    window.history.pushState({ lightbox: true }, '');
+    // Defer the history entry until after React StrictMode's setup/cleanup probe.
+    // Otherwise the probe calls history.back() and immediately closes the viewer.
+    let pushed = false;
+    const timer = window.setTimeout(() => {
+      window.history.pushState({ ...window.history.state, lightbox: true }, '');
+      pushed = true;
+    }, 0);
 
     const handlePopState = () => {
       // If the back button is pressed, close the lightbox instead of navigating away
+      pushed = false;
       onCloseRef.current();
     };
 
     window.addEventListener('popstate', handlePopState);
 
     return () => {
+      window.clearTimeout(timer);
       window.removeEventListener('popstate', handlePopState);
       // If unmounted via UI (e.g. clicking 'X'), manually pop the dummy state to keep history clean
-      if (window.history.state?.lightbox) {
+      if (pushed && window.history.state?.lightbox) {
         window.history.back();
       }
     };

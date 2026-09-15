@@ -51,13 +51,13 @@ test.describe('Accessibility', () => {
     });
 
     test('project detail dialog has ARIA attributes', async ({ page }) => {
-        await page.goto('/project/mono');
+        await page.goto('/project/yuki');
 
         const dialog = page.locator('[role="dialog"][aria-modal="true"]');
         await expect(dialog).toBeVisible();
 
         const label = await dialog.getAttribute('aria-label');
-        expect(label).toBe('Mono');
+        expect(label).toBe('Yuki');
     });
 
     test('close buttons have aria-label', async ({ page }) => {
@@ -68,7 +68,7 @@ test.describe('Accessibility', () => {
     });
 
     test('Escape key closes project detail overlay', async ({ page }) => {
-        await page.goto('/project/mono');
+        await page.goto('/project/yuki');
         await expect(page.locator('[role="dialog"]')).toBeVisible();
 
         await page.keyboard.press('Escape');

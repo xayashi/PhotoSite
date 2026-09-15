@@ -8,9 +8,9 @@ test.describe('Navigation & Routing', () => {
 
         const cards = page.locator('[data-card]');
         await expect(cards.first()).toBeVisible();
-        // Should have legacy + markdown projects
+        // The checked-in Yuki post should appear in the active chapter.
         const count = await cards.count();
-        expect(count).toBeGreaterThanOrEqual(5);
+        expect(count).toBeGreaterThanOrEqual(1);
     });
 
     test('clicking a card opens project detail directly on desktop (or via VIEW on touch)', async ({ page }) => {
@@ -36,13 +36,13 @@ test.describe('Navigation & Routing', () => {
     });
 
     test('direct URL access to /project/:slug works', async ({ page }) => {
-        await page.goto('/project/mono');
+        await page.goto('/project/yuki');
 
         const dialog = page.locator('[role="dialog"]');
         await expect(dialog).toBeVisible();
 
         // Title should update
-        await expect(page).toHaveTitle('Mono — 林');
+        await expect(page).toHaveTitle('Yuki — 林');
     });
 
     test('direct URL access to /about works', async ({ page }) => {
@@ -81,7 +81,7 @@ test.describe('Navigation & Routing', () => {
     });
 
     test('closing project detail navigates back to /', async ({ page }) => {
-        await page.goto('/project/lumina');
+        await page.goto('/project/yuki');
 
         const dialog = page.locator('[role="dialog"]');
         await expect(dialog).toBeVisible();
